@@ -1,0 +1,34 @@
+version: '3.4'
+
+services:
+  timeguardian_db:
+        image: "mcr.microsoft.com/mssql/server:2019-latest"
+        container_name: "TimeGuardian_DB"
+        environment:
+          SA_PASSWORD: "Admin1234!"
+          ACCEPT_EULA: "Y"
+          Name: "timeguardian_db"
+        ports:
+         - 1433:1433
+
+  timeguardian_api:
+    image: ${DOCKER_REGISTRY-}timeguardianapi
+    container_name: "TimeGuardian_API"
+    build:
+      context: .
+      dockerfile: TimeGuardian_API/Dockerfile
+    depends_on:
+    - timeguardian_db
+    ports:
+     -  9012:80
+     -  9011:443
+    environment:
+      - ASPNETCORE_HTTPS_PORT=9012
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=mypass123
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+      - ASPNETCORE_URLS=http://:80/;https://:443
+      - ASPNETCORE_ENVIRONMENT=Development
+    volumes:
+     - ./TimeGuardian_API/https/aspnetapp.pfx:/https/aspnetapp.pfx:ro
+
+  

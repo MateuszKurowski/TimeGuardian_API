@@ -8,9 +8,11 @@ using System.Text;
 using TimeGuardian_API.Data;
 
 var builder = WebApplication.CreateBuilder(args);
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-builder.Services.AddDbContext<ApiContext>
-        (options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContextPool<ApiContext>
+      (options => options.UseMySql(connectionString, ServerVersion.Create(new Version(10, 11, 3),
+      Pomelo.EntityFrameworkCore.MySql.Infrastructure.ServerType.MariaDb)));
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options =>
@@ -68,10 +70,7 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
 
     var context = services.GetRequiredService<ApiContext>();
-    if (context.Database.GetPendingMigrations().Any())
-    {
-        context.Database.Migrate();
-    }
+    if (context.Database.GetPendingMigrations().Any()) { context.Database.Migrate(); }
 }
 
 if (app.Environment.IsDevelopment())

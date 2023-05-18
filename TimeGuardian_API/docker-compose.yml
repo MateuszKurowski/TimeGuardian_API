@@ -2,14 +2,14 @@ version: '3.4'
 
 services:
   timeguardian_db:
-        image: "mcr.microsoft.com/mssql/server:2019-latest"
+        image: "mariadb:10.3"
         container_name: "TimeGuardian_DB"
+        restart: always
         environment:
-          SA_PASSWORD: "Admin1234!"
-          ACCEPT_EULA: "Y"
+          MARIADB_ROOT_PASSWORD: "admin"
           Name: "timeguardian_db"
         ports:
-         - 1433:1433
+         - 3306:3306
 
   timeguardian_api:
     image: ${DOCKER_REGISTRY-}timeguardianapi

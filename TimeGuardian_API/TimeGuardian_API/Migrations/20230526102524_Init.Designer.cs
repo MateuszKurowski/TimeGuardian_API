@@ -11,8 +11,8 @@ using TimeGuardian_API.Data;
 namespace TimeGuardian_API.Migrations
 {
     [DbContext(typeof(ApiContext))]
-    [Migration("20230517235419_init")]
-    partial class init
+    [Migration("20230526102524_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -50,6 +50,44 @@ namespace TimeGuardian_API.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Sessions");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Duration = 6339,
+                            EndTime = new DateTime(2023, 5, 17, 18, 58, 13, 0, DateTimeKind.Unspecified),
+                            SessionTypeId = 1,
+                            StartTime = new DateTime(2023, 5, 17, 17, 12, 34, 0, DateTimeKind.Unspecified),
+                            UserId = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Duration = 3600,
+                            EndTime = new DateTime(2023, 5, 17, 19, 58, 13, 0, DateTimeKind.Unspecified),
+                            SessionTypeId = 3,
+                            StartTime = new DateTime(2023, 5, 17, 18, 58, 13, 0, DateTimeKind.Unspecified),
+                            UserId = 1
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Duration = 15787,
+                            EndTime = new DateTime(2023, 5, 17, 23, 47, 3, 0, DateTimeKind.Unspecified),
+                            SessionTypeId = 3,
+                            StartTime = new DateTime(2023, 5, 17, 19, 23, 56, 0, DateTimeKind.Unspecified),
+                            UserId = 1
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Duration = 15787,
+                            EndTime = new DateTime(2023, 5, 17, 23, 47, 3, 0, DateTimeKind.Unspecified),
+                            SessionTypeId = 1,
+                            StartTime = new DateTime(2023, 5, 17, 19, 23, 56, 0, DateTimeKind.Unspecified),
+                            UserId = 2
+                        });
                 });
 
             modelBuilder.Entity("TimeGuardian_API.Models.SessionType", b =>
@@ -113,10 +151,18 @@ namespace TimeGuardian_API.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2023, 5, 18, 1, 54, 19, 14, DateTimeKind.Local).AddTicks(7113),
+                            CreatedAt = new DateTime(2023, 5, 26, 12, 25, 24, 521, DateTimeKind.Local).AddTicks(3530),
                             Email = "admin@admin.com",
                             Login = "Admin",
                             Password = "Admin1"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2023, 5, 26, 12, 25, 24, 521, DateTimeKind.Local).AddTicks(3555),
+                            Email = "jan@jan.com",
+                            Login = "Jan",
+                            Password = "Jan1"
                         });
                 });
 

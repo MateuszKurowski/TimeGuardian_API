@@ -1,0 +1,1 @@
+﻿docker run --name timeguardian_test_db -e MYSQL_ROOT_PASSWORD=mypass -p 3306:3306 -d docker.io/library/mariadb:10.3

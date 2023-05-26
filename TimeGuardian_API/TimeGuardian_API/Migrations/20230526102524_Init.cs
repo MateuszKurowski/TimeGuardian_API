@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TimeGuardian_API.Migrations
 {
     /// <inheritdoc />
-    public partial class init : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -95,7 +95,22 @@ namespace TimeGuardian_API.Migrations
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "CreatedAt", "Email", "Login", "Password" },
-                values: new object[] { 1, new DateTime(2023, 5, 18, 1, 54, 19, 14, DateTimeKind.Local).AddTicks(7113), "admin@admin.com", "Admin", "Admin1" });
+                values: new object[,]
+                {
+                    { 1, new DateTime(2023, 5, 26, 12, 25, 24, 521, DateTimeKind.Local).AddTicks(3530), "admin@admin.com", "Admin", "Admin1" },
+                    { 2, new DateTime(2023, 5, 26, 12, 25, 24, 521, DateTimeKind.Local).AddTicks(3555), "jan@jan.com", "Jan", "Jan1" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Sessions",
+                columns: new[] { "Id", "Duration", "EndTime", "SessionTypeId", "StartTime", "UserId" },
+                values: new object[,]
+                {
+                    { 1, 6339, new DateTime(2023, 5, 17, 18, 58, 13, 0, DateTimeKind.Unspecified), 1, new DateTime(2023, 5, 17, 17, 12, 34, 0, DateTimeKind.Unspecified), 1 },
+                    { 2, 3600, new DateTime(2023, 5, 17, 19, 58, 13, 0, DateTimeKind.Unspecified), 3, new DateTime(2023, 5, 17, 18, 58, 13, 0, DateTimeKind.Unspecified), 1 },
+                    { 3, 15787, new DateTime(2023, 5, 17, 23, 47, 3, 0, DateTimeKind.Unspecified), 3, new DateTime(2023, 5, 17, 19, 23, 56, 0, DateTimeKind.Unspecified), 1 },
+                    { 4, 15787, new DateTime(2023, 5, 17, 23, 47, 3, 0, DateTimeKind.Unspecified), 1, new DateTime(2023, 5, 17, 19, 23, 56, 0, DateTimeKind.Unspecified), 2 }
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Sessions_SessionTypeId",

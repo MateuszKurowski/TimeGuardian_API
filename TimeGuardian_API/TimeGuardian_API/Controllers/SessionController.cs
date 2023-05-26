@@ -24,21 +24,30 @@ public class SessionsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Session>>> GetSessions()
     {
-        return await _context.Sessions.ToListAsync();
+        return await _context.Sessions.Include(x => x.User).Include(x => x.SessionType).ToListAsync();
+    }
+
+    // GET: api/Sessions
+    [Route("GetSessionsByUserId/{userId}")]
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<Session>>> GetSessionsByUserId(int userId)
+    {
+        var sessions = await _context.Sessions.Include(x => x.User).Include(x => x.SessionType).Where(x => x.UserId == userId).ToListAsync();
+        if (sessions.Any())
+            return Ok(sessions);
+        else return NotFound();
     }
 
     // GET: api/Sessions/5
     [HttpGet("{id}")]
     public async Task<ActionResult<Session>> GetSession(int id)
     {
-        var session = await _context.Sessions.FindAsync(id);
+        var session = await _context.Sessions.Include(x => x.User).Include(x => x.SessionType).Where(x => x.Id == id).FirstAsync();
 
         if (session == null)
-        {
             return NotFound();
-        }
-
-        return session;
+        else
+            return session;
     }
 
     // PUT: api/Sessions/5
@@ -54,6 +63,7 @@ public class SessionsController : ControllerBase
         session.StartTime = sessionDTO.StartTime;
         session.EndTime = sessionDTO.EndTime;
         session.Duration = sessionDTO.Duration;
+        session.SessionTypeId = sessionDTO.SessionTypeId;
 
         await _context.SaveChangesAsync();
 

@@ -1,124 +1,70 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
 
-using TimeGuardian_API.Data;
+using TimeGuardian_API.Entities;
 using TimeGuardian_API.Models;
-using TimeGuardian_API.Models.DTO;
+using TimeGuardian_API.Services;
 
 namespace TimeGuardian_API.Controllers;
 
-[Authorize]
-[Route("timeguardian/[controller]")]
+[Route("api/sessiontype")]
 [ApiController]
-public class SessionTypesController : ControllerBase
+public class SessionTypeController : ControllerBase
 {
-    private readonly ApiContext _context;
+    private readonly ISessionTypeService _sessionTypeService;
 
-    public SessionTypesController(ApiContext context)
-    {
-        _context = context;
-    }
+    public SessionTypeController(ISessionTypeService sessionTypeService)
+        => _sessionTypeService = sessionTypeService;
 
-    // GET: api/SessionTypes
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<SessionType>>> GetSessionTypes()
-    {
-        return await _context.SessionTypes.ToListAsync();
-    }
+    public ActionResult<IEnumerable<SessionType>> GetAll()
+        => Ok(_sessionTypeService.GetAll());
 
-    // GET: api/SessionTypes/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<SessionType>> GetSessionType(int id)
+    public ActionResult<SessionType> Get([FromRoute] int id)
     {
-        var sessionType = await _context.SessionTypes.FindAsync(id);
+        var sessionType = _sessionTypeService.GetById(id);
 
         if (sessionType == null)
-        {
             return NotFound();
-        }
 
-        return sessionType;
+        return Ok(sessionType);
     }
 
-    // PUT: api/SessionTypes/5
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutSessionType(int id, SessionTypeDTO sessionTypeDTO)
+    public ActionResult<SessionType> Put(int id, SessionTypeDto sessionTypeDto)
     {
-        var sessionType = await _context.SessionTypes.FindAsync(id);
-        if (sessionType == null)
-        {
-            return NotFound();
-        }
-
-        var existingSessionType = await _context.SessionTypes.FirstOrDefaultAsync(s => s.Name == sessionTypeDTO.Name && s.Id != id);
-
+        var existingSessionType = _sessionTypeService.GetByName(sessionTypeDto.Name);
         if (existingSessionType != null)
-        {
-            return Conflict(new { message = $"SessionType with name {sessionTypeDTO.Name} already exists." });
-        }
+            return Conflict(new { message = $"SessionType with name {sessionTypeDto.Name} already exists." });
 
-        sessionType.Name = sessionTypeDTO.Name;
+        var sessionType = _sessionTypeService.Update(id, sessionTypeDto);
+        if (sessionType is null)
+            return NotFound();
 
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!SessionTypeExists(id))
-            {
-                return NotFound();
-            }
-            else
-            {
-                throw;
-            }
-        }
-
-        return NoContent();
+        return Ok(sessionType);
     }
 
-    // POST: api/SessionTypes
     [HttpPost]
-    public async Task<ActionResult<SessionType>> PostSessionType(SessionTypeDTO sessionTypeDTO)
+    public ActionResult Create(SessionTypeDto sessionTypeDto)
     {
-        var existingSessionType = await _context.SessionTypes.FirstOrDefaultAsync(s => s.Name == sessionTypeDTO.Name);
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
 
+        var existingSessionType = _sessionTypeService.GetByName(sessionTypeDto.Name);
         if (existingSessionType != null)
-        {
-            return Conflict(new { message = $"SessionType with name {sessionTypeDTO.Name} already exists." });
-        }
+            return Conflict(new { message = $"SessionType with name {sessionTypeDto.Name} already exists." });
 
-        var sessionType = new SessionType
-        {
-            Name = sessionTypeDTO.Name,
-        };
+        var id = _sessionTypeService.Create(sessionTypeDto);
 
-        _context.SessionTypes.Add(sessionType);
-        await _context.SaveChangesAsync();
-
-        return CreatedAtAction("GetSessionType", new { id = sessionType.Id }, sessionType);
+        return Created($"/api/sessiontype/{id}", null);
     }
 
-    // DELETE: api/SessionTypes/5
     [HttpDelete("{id}")]
-    public async Task<ActionResult<SessionType>> DeleteSessionType(int id)
+    public ActionResult Delete(int id)
     {
-        var sessionType = await _context.SessionTypes.FindAsync(id);
-        if (sessionType == null)
-        {
-            return NotFound();
-        }
-
-        _context.SessionTypes.Remove(sessionType);
-        await _context.SaveChangesAsync();
-
-        return sessionType;
-    }
-
-    private bool SessionTypeExists(int id)
-    {
-        return _context.SessionTypes.Any(e => e.Id == id);
+        var isDeleted = _sessionTypeService.Delete(id);
+        if (isDeleted)
+            return NoContent();
+        else return NotFound();
     }
 }

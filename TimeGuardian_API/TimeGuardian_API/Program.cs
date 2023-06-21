@@ -1,66 +1,72 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
-using System.Text;
+using System.Reflection;
 
 using TimeGuardian_API.Data;
+using TimeGuardian_API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-builder.Services.AddDbContextPool<ApiContext>
-      (options => options.UseMySql(connectionString, ServerVersion.Create(new Version(10, 11, 3),
-      Pomelo.EntityFrameworkCore.MySql.Infrastructure.ServerType.MariaDb)));
+if (builder.Environment.IsDevelopment())
+    builder.Configuration.AddJsonFile("appsettings.Development.json");
+else 
+    builder.Configuration.AddJsonFile("appsettings.Production.json");
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-        .AddJwtBearer(options =>
-            {
-                options.RequireHttpsMetadata = false;
-                options.SaveToken = true;
-                options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
 
-                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                    ValidAudience = builder.Configuration["Jwt:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-                };
-            });
+//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+//        .AddJwtBearer(options =>
+//            {
+//                options.RequireHttpsMetadata = false;
+//                options.SaveToken = true;
+//                options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+//                {
+//                    ValidateIssuer = true,
+//                    ValidateAudience = true,
+//                    ValidateLifetime = true,
+//                    ValidateIssuerSigningKey = true,
 
-builder.Services.AddAuthorization();
+//                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
+//                    ValidAudience = builder.Configuration["Jwt:Audience"],
+//                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+//                };
+//            });
+
 builder.Services.AddControllers();
+ApiDbContext.ApplyDbContext(builder);
+builder.Services.AddScoped<DbSeeder>();
+builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<ISessionTypeService, SessionTypeService>();
+builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
+
+//builder.Services.AddAuthorization();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "TimeGuardian - demonstracja", Version = "v0" });
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
-    {
-        Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "JWT Authorization header using the Bearer scheme."
-    });
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
- {
-     {
-           new OpenApiSecurityScheme
-             {
-                 Reference = new OpenApiReference
-                 {
-                     Type = ReferenceType.SecurityScheme,
-                     Id = "Bearer"
-                 }
-             },
-             new string[] {}
-     }
- });
+ //   c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+ //   {
+ //       Name = "Authorization",
+ //       Type = SecuritySchemeType.ApiKey,
+ //       Scheme = "Bearer",
+ //       BearerFormat = "JWT",
+ //       In = ParameterLocation.Header,
+ //       Description = "JWT Authorization header using the Bearer scheme."
+ //   });
+ //   c.AddSecurityRequirement(new OpenApiSecurityRequirement
+ //{
+ //    {
+ //          new OpenApiSecurityScheme
+ //            {
+ //                Reference = new OpenApiReference
+ //                {
+ //                    Type = ReferenceType.SecurityScheme,
+ //                    Id = "Bearer"
+ //                }
+ //            },
+ //            new string[] {}
+ //    }
+ //});
 });
 
 var app = builder.Build();
@@ -69,8 +75,13 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
 
-    var context = services.GetRequiredService<ApiContext>();
-    if (context.Database.GetPendingMigrations().Any()) { context.Database.Migrate(); }
+    var context = services.GetRequiredService<ApiDbContext>();
+    
+    if (context.Database.GetPendingMigrations().Any()) 
+        context.Database.Migrate();
+
+    var seeder = scope.ServiceProvider.GetRequiredService<DbSeeder>();
+    seeder.Seed();
 }
 
 if (app.Environment.IsDevelopment())
@@ -81,8 +92,8 @@ if (app.Environment.IsDevelopment())
 
 //app.UseHttpsRedirection();
 
-app.UseAuthentication();
-app.UseAuthorization();
+//app.UseAuthentication();
+//app.UseAuthorization();
 
 app.MapControllers();
 

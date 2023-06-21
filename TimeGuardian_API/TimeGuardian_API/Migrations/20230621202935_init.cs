@@ -4,17 +4,30 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
-
 namespace TimeGuardian_API.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterDatabase()
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "Roles",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Name = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Roles", x => x.Id);
+                })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
@@ -40,15 +53,27 @@ namespace TimeGuardian_API.Migrations
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Email = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Login = table.Column<string>(type: "longtext", nullable: false)
+                    PasswordHash = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Password = table.Column<string>(type: "longtext", nullable: false)
+                    FirstName = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                    LastName = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    DateOfBirth = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    Nationality = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    RoleId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Users_Roles_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "Roles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -58,11 +83,11 @@ namespace TimeGuardian_API.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    SessionTypeId = table.Column<int>(type: "int", nullable: false),
                     StartTime = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     EndTime = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    Duration = table.Column<int>(type: "int", nullable: true)
+                    Duration = table.Column<int>(type: "int", nullable: true),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    SessionTypeId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -82,36 +107,6 @@ namespace TimeGuardian_API.Migrations
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.InsertData(
-                table: "SessionTypes",
-                columns: new[] { "Id", "Name" },
-                values: new object[,]
-                {
-                    { 1, "Nauka" },
-                    { 2, "Praca" },
-                    { 3, "Prokrastynacja" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "Users",
-                columns: new[] { "Id", "CreatedAt", "Email", "Login", "Password" },
-                values: new object[,]
-                {
-                    { 1, new DateTime(2023, 5, 26, 12, 25, 24, 521, DateTimeKind.Local).AddTicks(3530), "admin@admin.com", "Admin", "Admin1" },
-                    { 2, new DateTime(2023, 5, 26, 12, 25, 24, 521, DateTimeKind.Local).AddTicks(3555), "jan@jan.com", "Jan", "Jan1" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "Sessions",
-                columns: new[] { "Id", "Duration", "EndTime", "SessionTypeId", "StartTime", "UserId" },
-                values: new object[,]
-                {
-                    { 1, 6339, new DateTime(2023, 5, 17, 18, 58, 13, 0, DateTimeKind.Unspecified), 1, new DateTime(2023, 5, 17, 17, 12, 34, 0, DateTimeKind.Unspecified), 1 },
-                    { 2, 3600, new DateTime(2023, 5, 17, 19, 58, 13, 0, DateTimeKind.Unspecified), 3, new DateTime(2023, 5, 17, 18, 58, 13, 0, DateTimeKind.Unspecified), 1 },
-                    { 3, 15787, new DateTime(2023, 5, 17, 23, 47, 3, 0, DateTimeKind.Unspecified), 3, new DateTime(2023, 5, 17, 19, 23, 56, 0, DateTimeKind.Unspecified), 1 },
-                    { 4, 15787, new DateTime(2023, 5, 17, 23, 47, 3, 0, DateTimeKind.Unspecified), 1, new DateTime(2023, 5, 17, 19, 23, 56, 0, DateTimeKind.Unspecified), 2 }
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_Sessions_SessionTypeId",
                 table: "Sessions",
@@ -121,6 +116,11 @@ namespace TimeGuardian_API.Migrations
                 name: "IX_Sessions_UserId",
                 table: "Sessions",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_RoleId",
+                table: "Users",
+                column: "RoleId");
         }
 
         /// <inheritdoc />
@@ -134,6 +134,9 @@ namespace TimeGuardian_API.Migrations
 
             migrationBuilder.DropTable(
                 name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "Roles");
         }
     }
 }

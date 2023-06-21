@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace TimeGuardian_API.Models.DTO;
+namespace TimeGuardian_API.Models;
 
 public class SessionDTO : SessionUpdateDTO
 {

@@ -16,55 +16,34 @@ public class RoleController : ControllerBase
         => _roleService = roleService;
 
     [HttpGet]
-    public ActionResult<IEnumerable<Role>> GetAll()
+    public ActionResult<IEnumerable<RoleDto>> GetAll()
         => Ok(_roleService.GetAll());
 
     [HttpGet("{id}")]
-    public ActionResult<Role> Get([FromRoute] int id)
+    public ActionResult<RoleDto> Get([FromRoute] int id)
     {
         var role = _roleService.GetById(id);
-
-        if (role == null)
-            return NotFound();
-
         return Ok(role);
     }
 
     [HttpPut("{id}")]
-    public ActionResult<Role> Put(int id, RoleDto roleDto)
+    public ActionResult<RoleDto> Put(int id, RoleDto roleDto)
     {
-        var existingrole = _roleService.GetByName(roleDto.Name);
-        if (existingrole != null)
-            return Conflict(new { message = $"Role with name {roleDto.Name} already exists." });
-
         var role = _roleService.Update(id, roleDto);
-        if (role is null)
-            return NotFound();
-
         return Ok(role);
     }
 
     [HttpPost]
     public ActionResult Create(RoleDto roleDto)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        var existingrole = _roleService.GetByName(roleDto.Name);
-        if (existingrole != null)
-            return Conflict(new { message = $"role with name {roleDto.Name} already exists." });
-
         var id = _roleService.Create(roleDto);
-
         return Created($"/api/role/{id}", null);
     }
 
     [HttpDelete("{id}")]
     public ActionResult Delete(int id)
     {
-        var isDeleted = _roleService.Delete(id);
-        if (isDeleted)
-            return NoContent();
-        else return NotFound();
+        _roleService.Delete(id);
+        return NoContent();
     }
 }

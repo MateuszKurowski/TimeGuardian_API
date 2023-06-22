@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-
-using TimeGuardian_API.Entities;
+﻿using TimeGuardian_API.Entities;
 
 namespace TimeGuardian_API.Data;
 
@@ -51,8 +49,8 @@ public class DbSeeder
     private IEnumerable<Session> GetSessions()
         => new List<Session>()
             {
-                new Session 
-                { 
+                new Session
+                {
                     Id = 1,
                     UserId = 1,
                     SessionTypeId = 1,

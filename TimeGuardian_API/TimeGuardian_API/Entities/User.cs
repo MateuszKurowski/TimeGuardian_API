@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-
-namespace TimeGuardian_API.Entities;
+﻿namespace TimeGuardian_API.Entities;
 
 public class User
 {

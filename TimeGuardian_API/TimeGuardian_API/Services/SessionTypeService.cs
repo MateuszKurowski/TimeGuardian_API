@@ -1,7 +1,10 @@
 ﻿using AutoMapper;
 
+using System.Data;
+
 using TimeGuardian_API.Data;
 using TimeGuardian_API.Entities;
+using TimeGuardian_API.Exceptions;
 using TimeGuardian_API.Models;
 
 namespace TimeGuardian_API.Services;
@@ -9,11 +12,11 @@ namespace TimeGuardian_API.Services;
 public interface ISessionTypeService
 {
     int Create(SessionTypeDto sessionTypeDto);
-    bool Delete(int id);
-    IEnumerable<SessionType> GetAll();
-    SessionType? GetById(int id);
-    SessionType? GetByName(string name);
-    SessionType? Update(int id, SessionTypeDto sessionTypeDto);
+    void Delete(int id);
+    IEnumerable<SessionTypeDto> GetAll();
+    SessionTypeDto GetById(int id);
+    SessionTypeDto GetByName(string name);
+    SessionTypeDto Update(int id, SessionTypeDto sessionTypeDto);
 }
 
 public class SessionTypeService : ISessionTypeService
@@ -27,25 +30,43 @@ public class SessionTypeService : ISessionTypeService
         _mapper = mapper;
     }
 
-    public SessionType? GetById(int id)
-        => _dbContext
-            .SessionTypes
-            .FirstOrDefault(st => st.Id == id);
-
-    public SessionType? GetByName(string name)
-        => _dbContext
-            .SessionTypes
-            .FirstOrDefault(st => st.Name == name);
-
-    public IEnumerable<SessionType> GetAll()
-        => _dbContext
-            .SessionTypes;
-
-    public SessionType? Update(int id, SessionTypeDto sessionTypeDto)
+    public SessionTypeDto GetById(int id)
     {
-        var sessionType = GetById(id);
+        var sessionType = _dbContext
+                                    .SessionTypes
+                                    .FirstOrDefault(st => st.Id == id);
+
         if (sessionType is null)
-            return null;
+            throw new NotFoundException(NotFoundException.Entities.SessionType);
+        else return _mapper.Map<SessionTypeDto>(sessionType);
+    }
+
+    public SessionTypeDto GetByName(string name)
+    {
+        var sessionType = _dbContext
+                                    .SessionTypes
+                                    .FirstOrDefault(st => st.Name == name);
+
+        if (sessionType is null)
+            throw new NotFoundException(NotFoundException.Entities.SessionType);
+        else return _mapper.Map<SessionTypeDto>(sessionType);
+    }
+
+    public IEnumerable<SessionTypeDto> GetAll()
+    {
+        var sessionTypes = _dbContext.SessionTypes?.Select(sessionType => _mapper.Map<SessionTypeDto>(sessionType));
+
+        return sessionTypes is null
+            ? Enumerable.Empty<SessionTypeDto>()
+            : sessionTypes;
+    }
+
+    public SessionTypeDto Update(int id, SessionTypeDto sessionTypeDto)
+    {
+        if (IsAlreadyExistWithThisName(sessionTypeDto.Name))
+            throw new AlreadyExistsException(AlreadyExistsException.Entities.SessionType, sessionTypeDto.Name);
+
+        var sessionType = GetById(id);
 
         sessionType.Name = sessionTypeDto.Name;
         _dbContext.SaveChanges();
@@ -54,6 +75,9 @@ public class SessionTypeService : ISessionTypeService
 
     public int Create(SessionTypeDto sessionTypeDto)
     {
+        if (IsAlreadyExistWithThisName(sessionTypeDto.Name))
+            throw new AlreadyExistsException(AlreadyExistsException.Entities.SessionType, sessionTypeDto.Name);
+
         var sessionType = _mapper.Map<SessionType>(sessionTypeDto);
         _dbContext.SessionTypes.Add(sessionType);
         _dbContext.SaveChanges();
@@ -61,15 +85,22 @@ public class SessionTypeService : ISessionTypeService
         return sessionType.Id;
     }
 
-    public bool Delete(int id)
+    public void Delete(int id)
     {
-        var sessionType = GetById(id);
-        if (sessionType is null)
-            return false;
+        var sessiontType = _dbContext
+                        .SessionTypes
+                        .FirstOrDefault(st => st.Id == id)
+                        ?? throw new NotFoundException(NotFoundException.Entities.SessionType);
 
-        _dbContext.SessionTypes.Remove(sessionType);
+        _dbContext.SessionTypes.Remove(sessiontType);
         _dbContext.SaveChanges();
-        return true;
     }
 
+    private bool IsAlreadyExistWithThisName(string name)
+    {
+        var sessionType = _dbContext
+                                    .SessionTypes
+                                    .FirstOrDefault(st => st.Name == name);
+        return sessionType is not null;
+    }
 }

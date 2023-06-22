@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+
 using TimeGuardian_API.Entities;
 
 namespace TimeGuardian_API.Data;
@@ -59,20 +60,21 @@ public class ApiDbContext : DbContext
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
         if (builder.Environment.IsDevelopment())
-            builder.Services.AddDbContextPool<ApiDbContext>(options 
+            builder.Services.AddDbContextPool<ApiDbContext>(options
                                                             => options.UseMySql(connectionString,
                                                                 ServerVersion.Create(
                                                                     new Version(10, 11, 3),
                                                                     Pomelo.EntityFrameworkCore.MySql.Infrastructure.ServerType.MariaDb),
                                                                 providerOpions
                                                                     => providerOpions.EnableRetryOnFailure())
-                                                            .LogTo(Console.WriteLine, LogLevel.Information));
+                                                            .LogTo(Console.WriteLine, LogLevel.Trace));
         else
-            builder.Services.AddDbContextPool<ApiDbContext>(options => options.UseMySql(connectionString,
-                        ServerVersion.Create(
-                            new Version(10, 11, 3),
-                            Pomelo.EntityFrameworkCore.MySql.Infrastructure.ServerType.MariaDb),
-                        providerOpions
-                            => providerOpions.EnableRetryOnFailure()));
+            builder.Services.AddDbContextPool<ApiDbContext>(options
+                                                            => options.UseMySql(connectionString,
+                                                                    ServerVersion.Create(
+                                                                        new Version(10, 11, 3),
+                                                                        Pomelo.EntityFrameworkCore.MySql.Infrastructure.ServerType.MariaDb),
+                                                                    providerOpions
+                                                                        => providerOpions.EnableRetryOnFailure()));
     }
 }

@@ -1,12 +1,14 @@
-﻿namespace TimeGuardian_API.Entities;
+﻿using TimeGuardian_API.Models.Role;
 
-public class User
+namespace TimeGuardian_API.Models.User;
+
+public class UserDto
 {
     public int Id { get; set; }
 
-    public string Email { get; set; }
-
     public string PasswordHash { get; set; }
+
+    public string Email { get; set; }
 
     public string? FirstName { get; set; }
 
@@ -18,10 +20,7 @@ public class User
 
     public string? Nationality { get; set; }
 
-    public bool Deleted { get; set; } = false;
+    public int? RoleId {get; set; }
 
-
-    public int RoleId { get; set; }
-
-    public Role Role { get; set; }
+    public string? RoleName {get; set; }
 }

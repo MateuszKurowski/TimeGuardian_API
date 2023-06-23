@@ -6,6 +6,7 @@ public class AlreadyExistsException : Exception
     {
         Role,
         SessionType,
+        User,
     }
 
     public AlreadyExistsException(Entities entities, string name)
@@ -13,9 +14,11 @@ public class AlreadyExistsException : Exception
         switch (entities)
         {
             case Entities.Role:
-                throw new AlreadyExistsException($"Role with name {name} already exists.");
+                throw new AlreadyExistsException($"Role with name: '{name}' already exists.");
             case Entities.SessionType:
-                throw new AlreadyExistsException($"SessionType with name {name} already exists.");
+                throw new AlreadyExistsException($"SessionType with name: '{name}' already exists.");
+            case Entities.User:
+                throw new AlreadyExistsException($"User with email: '{name}' already exists.");
         }
     }
 

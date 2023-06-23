@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-using TimeGuardian_API.Entities;
-using TimeGuardian_API.Models;
+using TimeGuardian_API.Models.SessionType;
 using TimeGuardian_API.Services;
 
 namespace TimeGuardian_API.Controllers;
@@ -29,21 +28,21 @@ public class SessionTypeController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public ActionResult<SessionTypeDto> Put(int id, SessionTypeDto sessionTypeDto)
+    public ActionResult<SessionTypeDto> Update([FromBody] CreateSessionTypeDto sessionTypeDto, [FromRoute] int id)
     {
-        var sessionType = _sessionTypeService.Update(id, sessionTypeDto);
+        var sessionType = _sessionTypeService.Update(sessionTypeDto, id);
         return Ok(sessionType);
     }
 
     [HttpPost]
-    public ActionResult Create(SessionTypeDto sessionTypeDto)
+    public ActionResult Create([FromBody] CreateSessionTypeDto sessionTypeDto)
     {
         var id = _sessionTypeService.Create(sessionTypeDto);
         return Created($"/api/sessiontype/{id}", null);
     }
 
     [HttpDelete("{id}")]
-    public ActionResult Delete(int id)
+    public ActionResult Delete([FromRoute] int id)
     {
         _sessionTypeService.Delete(id);
         return NoContent();

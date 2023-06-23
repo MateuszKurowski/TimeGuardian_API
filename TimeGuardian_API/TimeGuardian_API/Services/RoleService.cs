@@ -3,18 +3,18 @@
 using TimeGuardian_API.Data;
 using TimeGuardian_API.Entities;
 using TimeGuardian_API.Exceptions;
-using TimeGuardian_API.Models;
+using TimeGuardian_API.Models.Role;
 
 namespace TimeGuardian_API.Services;
 
 public interface IRoleService
 {
-    int Create(RoleDto roleDto);
+    int Create(CreateRoleDto roleDto);
     void Delete(int id);
     IEnumerable<RoleDto> GetAll();
     RoleDto GetById(int id);
     RoleDto GetByName(string name);
-    RoleDto Update(int id, RoleDto roleDto);
+    RoleDto Update(CreateRoleDto roleDto, int id);
 }
 
 public class RoleService : IRoleService
@@ -60,25 +60,24 @@ public class RoleService : IRoleService
             : roles;
     }
 
-    public RoleDto Update(int id, RoleDto roleDto)
+    public RoleDto Update(CreateRoleDto dto, int id)
     {
-        if (IsAlreadyExistWithThisName(roleDto.Name))
-            throw new AlreadyExistsException(AlreadyExistsException.Entities.Role, roleDto.Name);
+        var role = _dbContext
+                        .Roles
+                        .FirstOrDefault(r => r.Id == id) 
+                        ?? throw new NotFoundException(NotFoundException.Entities.Role);
 
-        var role = GetById(id);
-
-        role.Name = roleDto.Name;
+        role.Name = dto.Name;
         _dbContext.SaveChanges();
+
         return _mapper.Map<RoleDto>(role);
     }
 
-    public int Create(RoleDto roleDto)
+    public int Create(CreateRoleDto dto)
     {
-        if (IsAlreadyExistWithThisName(roleDto.Name))
-            throw new AlreadyExistsException(AlreadyExistsException.Entities.Role, roleDto.Name);
-
-        var role = _mapper.Map<Role>(roleDto);
+        var role = _mapper.Map<Role>(dto);
         _dbContext.Roles.Add(role);
+
         _dbContext.SaveChanges();
 
         return role.Id;
@@ -88,18 +87,10 @@ public class RoleService : IRoleService
     {
         var role = _dbContext
                         .Roles
-                        .FirstOrDefault(st => st.Id == id)
+                        .FirstOrDefault(r => r.Id == id)
                         ?? throw new NotFoundException(NotFoundException.Entities.Role);
 
         _dbContext.Roles.Remove(role);
         _dbContext.SaveChanges();
-    }
-
-    private bool IsAlreadyExistWithThisName(string name)
-    {
-        var role = _dbContext
-                                    .Roles
-                                    .FirstOrDefault(r => r.Name == name);
-        return role is not null;
     }
 }

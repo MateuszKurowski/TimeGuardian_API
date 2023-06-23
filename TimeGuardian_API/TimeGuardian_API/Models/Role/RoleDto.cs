@@ -1,4 +1,4 @@
-﻿namespace TimeGuardian_API.Models;
+﻿namespace TimeGuardian_API.Models.Role;
 
 public class RoleDto
 {

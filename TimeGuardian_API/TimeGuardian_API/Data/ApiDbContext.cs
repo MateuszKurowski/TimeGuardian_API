@@ -60,14 +60,17 @@ public class ApiDbContext : DbContext
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
         if (builder.Environment.IsDevelopment())
+            //builder.Services.AddDbContextPool<ApiDbContext>(options
+            //                                                => options.UseMySql(connectionString,
+            //                                                    ServerVersion.Create(
+            //                                                        new Version(10, 11, 3),
+            //                                                        Pomelo.EntityFrameworkCore.MySql.Infrastructure.ServerType.MariaDb),
+            //                                                    providerOpions
+            //                                                        => providerOpions.EnableRetryOnFailure(20))
+            //                                                .LogTo(Console.WriteLine, LogLevel.Trace));
             builder.Services.AddDbContextPool<ApiDbContext>(options
                                                             => options.UseMySql(connectionString,
-                                                                ServerVersion.Create(
-                                                                    new Version(10, 11, 3),
-                                                                    Pomelo.EntityFrameworkCore.MySql.Infrastructure.ServerType.MariaDb),
-                                                                providerOpions
-                                                                    => providerOpions.EnableRetryOnFailure())
-                                                            .LogTo(Console.WriteLine, LogLevel.Trace));
+                                                                new MariaDbServerVersion(new Version(10, 3, 39))));
         else
             builder.Services.AddDbContextPool<ApiDbContext>(options
                                                             => options.UseMySql(connectionString,
@@ -75,6 +78,6 @@ public class ApiDbContext : DbContext
                                                                         new Version(10, 11, 3),
                                                                         Pomelo.EntityFrameworkCore.MySql.Infrastructure.ServerType.MariaDb),
                                                                     providerOpions
-                                                                        => providerOpions.EnableRetryOnFailure()));
+                                                                        => providerOpions.EnableRetryOnFailure(10)));
     }
 }

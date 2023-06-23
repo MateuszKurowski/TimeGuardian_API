@@ -2,7 +2,7 @@
 
 namespace TimeGuardian_API.Models;
 
-public class SessionUpdateDTO
+public class SessionUpdateDto
 {
     public DateTime StartTime { get; set; }
     public DateTime? EndTime { get; set; }

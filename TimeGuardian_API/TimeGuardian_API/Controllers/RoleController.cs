@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-using TimeGuardian_API.Entities;
-using TimeGuardian_API.Models;
+using TimeGuardian_API.Models.Role;
 using TimeGuardian_API.Services;
 
 namespace TimeGuardian_API.Controllers;
@@ -27,21 +26,21 @@ public class RoleController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public ActionResult<RoleDto> Put(int id, RoleDto roleDto)
+    public ActionResult<RoleDto> Put([FromBody] CreateRoleDto roleDto, [FromRoute] int id)
     {
-        var role = _roleService.Update(id, roleDto);
+        var role = _roleService.Update(roleDto, id);
         return Ok(role);
     }
 
     [HttpPost]
-    public ActionResult Create(RoleDto roleDto)
+    public ActionResult Create([FromBody] CreateRoleDto roleDto)
     {
         var id = _roleService.Create(roleDto);
         return Created($"/api/role/{id}", null);
     }
 
     [HttpDelete("{id}")]
-    public ActionResult Delete(int id)
+    public ActionResult Delete([FromRoute] int id)
     {
         _roleService.Delete(id);
         return NoContent();

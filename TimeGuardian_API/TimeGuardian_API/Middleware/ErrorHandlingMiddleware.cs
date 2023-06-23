@@ -22,10 +22,10 @@ public class ErrorHandlingMiddleware : IMiddleware
             context.Response.StatusCode = 404;
             await context.Response.WriteAsync(notFoundException.Message);
         }
-        catch (AlreadyExistsException alreadyExistsException)
+        catch (AlreadyExistsException alreadyExistException)
         {
             context.Response.StatusCode = 409;
-            await context.Response.WriteAsync(alreadyExistsException.Message);
+            await context.Response.WriteAsync(alreadyExistException.Message);
         }
         catch (Exception exception)
         {

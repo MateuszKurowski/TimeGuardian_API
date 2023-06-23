@@ -2,7 +2,7 @@
 
 namespace TimeGuardian_API.Models;
 
-public class SessionDTO : SessionUpdateDTO
+public class SessionDto : SessionUpdateDto
 {
     [Required]
     public int UserId { get; set; }

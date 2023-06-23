@@ -1,4 +1,6 @@
-﻿namespace TimeGuardian_API.Entities;
+﻿using TimeGuardian_API.Models.User;
+
+namespace TimeGuardian_API.Entities;
 
 public class Session
 {
@@ -10,13 +12,16 @@ public class Session
 
     public int? Duration { get; set; }
 
+    public bool Deleted { get; set; } = false;
+
 
     public int UserId { get; set; }
 
-    public virtual User User { get; set; }
+    public virtual UserDto User { get; set; }
 
 
     public int SessionTypeId { get; set; }
 
     public virtual SessionType SessionType { get; set; }
+
 }

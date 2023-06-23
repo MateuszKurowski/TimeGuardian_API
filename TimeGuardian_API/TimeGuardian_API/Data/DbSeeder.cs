@@ -1,12 +1,19 @@
-﻿using TimeGuardian_API.Entities;
+﻿using Microsoft.AspNetCore.Identity;
+
+using TimeGuardian_API.Entities;
 
 namespace TimeGuardian_API.Data;
 
 public class DbSeeder
 {
     private readonly ApiDbContext _dbContext;
+    private readonly IPasswordHasher<User> _passwordHasher;
 
-    public DbSeeder(ApiDbContext dbContext) => _dbContext = dbContext;
+    public DbSeeder(ApiDbContext dbContext, IPasswordHasher<User> passwordHasher)
+    {
+        _dbContext = dbContext;
+        _passwordHasher = passwordHasher;
+    }
 
     public void Seed()
     {
@@ -34,12 +41,12 @@ public class DbSeeder
                 wasChanges = true;
             }
 
-            if (!_dbContext.Sessions.Any())
-            {
-                var sessions = GetSessions();
-                _dbContext.Sessions.AddRange(sessions);
-                wasChanges = true;
-            }
+            //if (!_dbContext.Sessions.Any())
+            //{
+            //    var sessions = GetSessions();
+            //    _dbContext.Sessions.AddRange(sessions);
+            //    wasChanges = true;
+            //}
 
             if (wasChanges)
                 _dbContext.SaveChanges();
@@ -56,7 +63,8 @@ public class DbSeeder
                     SessionTypeId = 1,
                     StartTime = new DateTime(2023, 5, 17, 17, 12, 34),
                     EndTime = new DateTime(2023, 5, 17, 18, 58, 13),
-                    Duration = 6339
+                    Duration = 6339,
+                    Deleted = false
                 },
 
                 new Session
@@ -66,7 +74,8 @@ public class DbSeeder
                     SessionTypeId = 3,
                     StartTime = new DateTime(2023, 5, 17, 18, 58, 13),
                     EndTime = new DateTime(2023, 5, 17, 19, 58, 13),
-                    Duration = 3600
+                    Duration = 3600,
+                    Deleted = false
                 },
 
                 new Session
@@ -76,7 +85,8 @@ public class DbSeeder
                     SessionTypeId = 2,
                     StartTime = new DateTime(2023, 5, 17, 19, 23, 56),
                     EndTime = new DateTime(2023, 5, 17, 23, 47, 3),
-                    Duration = 15787
+                    Duration = 15787,
+                    Deleted = false
                 },
 
                 new Session
@@ -86,7 +96,8 @@ public class DbSeeder
                     SessionTypeId = 1,
                     StartTime = new DateTime(2023, 5, 17, 19, 23, 56),
                     EndTime = new DateTime(2023, 5, 17, 23, 47, 3),
-                    Duration = 15787
+                    Duration = 15787,
+                    Deleted = false
                 }
             };
 
@@ -96,13 +107,13 @@ public class DbSeeder
                 new Role()
                 {
                     Id = 1,
-                    Name = "Admin",
+                    Name = "Admin"
                 },
 
                 new Role()
                 {
                     Id = 2,
-                    Name = "User",
+                    Name = "User"
                 }
             };
 
@@ -112,47 +123,55 @@ public class DbSeeder
                 new SessionType()
                 {
                     Id = 1,
-                    Name = "Nauka",
+                    Name = "Nauka"
                 },
 
                 new SessionType()
                 {
                     Id = 2,
-                    Name = "Praca",
+                    Name = "Praca"
                 },
 
                 new SessionType()
                 {
                     Id = 3,
-                    Name = "Prokrastynacja",
+                    Name = "Prokrastynacja"
                 }
             };
 
     private IEnumerable<User> GetUsers()
-        => new List<User>()
-            {
-                new User()
-                {
-                    Id = 1,
-                    Email = "admin@admin.pl",
-                    FirstName = "Admin",
-                    LastName = "Nimda",
-                    DateOfBirth = new DateTime(1998, 05, 09),
-                    CreatedAt = DateTime.Now,
-                    Nationality = "Poland",
-                    RoleId = 1,
-                },
+    {
+        var users = new List<User>();
+        var user1 = new User()
+        {
+            Id = 1,
+            Email = "admin@admin.pl",
+            FirstName = "Admin",
+            LastName = "Nimda",
+            DateOfBirth = new DateTime(1998, 05, 09),
+            CreatedAt = DateTime.Now,
+            Nationality = "Poland",
+            RoleId = 1,
+            Deleted = false
+        };
+        user1.PasswordHash = _passwordHasher.HashPassword(user1, "Admin1");
+        users.Add(user1);
 
-                new User()
-                {
-                    Id = 2,
-                    Email = "jan.nowak@gmail.pl",
-                    FirstName = "Jan",
-                    LastName = "Nowak",
-                    DateOfBirth = new DateTime(2001, 01, 30),
-                    CreatedAt = DateTime.Now,
-                    Nationality = "England",
-                    RoleId = 2,
-                }
-            };
+        var user2 = new User()
+        {
+            Id = 2,
+            Email = "jan.nowak@gmail.pl",
+            FirstName = "Jan",
+            LastName = "Nowak",
+            DateOfBirth = new DateTime(2001, 01, 30),
+            CreatedAt = DateTime.Now,
+            Nationality = "England",
+            RoleId = 2,
+            Deleted = false
+        };
+        user2.PasswordHash = _passwordHasher.HashPassword(user2, "Jan1");
+        users.Add(user2);
+        
+        return users;
+    }
 }

@@ -5,18 +5,18 @@ using System.Data;
 using TimeGuardian_API.Data;
 using TimeGuardian_API.Entities;
 using TimeGuardian_API.Exceptions;
-using TimeGuardian_API.Models;
+using TimeGuardian_API.Models.SessionType;
 
 namespace TimeGuardian_API.Services;
 
 public interface ISessionTypeService
 {
-    int Create(SessionTypeDto sessionTypeDto);
+    int Create(CreateSessionTypeDto sessionTypeDto);
     void Delete(int id);
     IEnumerable<SessionTypeDto> GetAll();
     SessionTypeDto GetById(int id);
     SessionTypeDto GetByName(string name);
-    SessionTypeDto Update(int id, SessionTypeDto sessionTypeDto);
+    SessionTypeDto Update(CreateSessionTypeDto sessionTypeDto, int id);
 }
 
 public class SessionTypeService : ISessionTypeService
@@ -61,24 +61,22 @@ public class SessionTypeService : ISessionTypeService
             : sessionTypes;
     }
 
-    public SessionTypeDto Update(int id, SessionTypeDto sessionTypeDto)
+    public SessionTypeDto Update(CreateSessionTypeDto dto, int id)
     {
-        if (IsAlreadyExistWithThisName(sessionTypeDto.Name))
-            throw new AlreadyExistsException(AlreadyExistsException.Entities.SessionType, sessionTypeDto.Name);
+        var sessionType = _dbContext
+                                     .SessionTypes
+                                     .FirstOrDefault(st => st.Id == id)
+                                     ?? throw new NotFoundException(NotFoundException.Entities.SessionType);
 
-        var sessionType = GetById(id);
-
-        sessionType.Name = sessionTypeDto.Name;
+        sessionType.Name = dto.Name;
         _dbContext.SaveChanges();
-        return sessionType;
+
+        return _mapper.Map<SessionTypeDto>(sessionType);
     }
 
-    public int Create(SessionTypeDto sessionTypeDto)
+    public int Create(CreateSessionTypeDto dto)
     {
-        if (IsAlreadyExistWithThisName(sessionTypeDto.Name))
-            throw new AlreadyExistsException(AlreadyExistsException.Entities.SessionType, sessionTypeDto.Name);
-
-        var sessionType = _mapper.Map<SessionType>(sessionTypeDto);
+        var sessionType = _mapper.Map<SessionType>(dto);
         _dbContext.SessionTypes.Add(sessionType);
         _dbContext.SaveChanges();
 
@@ -94,13 +92,5 @@ public class SessionTypeService : ISessionTypeService
 
         _dbContext.SessionTypes.Remove(sessiontType);
         _dbContext.SaveChanges();
-    }
-
-    private bool IsAlreadyExistWithThisName(string name)
-    {
-        var sessionType = _dbContext
-                                    .SessionTypes
-                                    .FirstOrDefault(st => st.Name == name);
-        return sessionType is not null;
     }
 }

@@ -1,12 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 using TimeGuardian_API.Models.Role;
 using TimeGuardian_API.Services;
 
 namespace TimeGuardian_API.Controllers;
 
-[Route("api/role")]
+[Authorize(Roles = "Admin")]
 [ApiController]
+[Route("api/role")]
 public class RoleController : ControllerBase
 {
     private readonly IRoleService _roleService;

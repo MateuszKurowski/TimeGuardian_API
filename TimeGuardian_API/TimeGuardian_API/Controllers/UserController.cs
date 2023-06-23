@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 using TimeGuardian_API.Models;
 using TimeGuardian_API.Models.User;
@@ -6,8 +7,9 @@ using TimeGuardian_API.Services;
 
 namespace TimeGuardian_API.Controllers;
 
-[Route("api/user")]
+[Authorize]
 [ApiController]
+[Route("api/user")]
 public class UsersController : ControllerBase
 {
     private readonly IUserService _userService;
@@ -17,6 +19,7 @@ public class UsersController : ControllerBase
         _userService = userService;
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public ActionResult<IEnumerable<UserDto>> GetAll()
     {
@@ -24,6 +27,7 @@ public class UsersController : ControllerBase
         return Ok(users);
     }
 
+    [Authorize(Policy = "SelfRequirment")]
     [HttpGet("{id}")]
     public ActionResult<UserDto> Get([FromRoute] int id)
     {
@@ -31,6 +35,7 @@ public class UsersController : ControllerBase
         return user;
     }
 
+    [Authorize(Policy = "SelfRequirment")]
     [HttpPut("{id}")]
     public ActionResult<UserDto> Update([FromBody] CreateUserDto dto, [FromRoute] int id)
     {
@@ -38,6 +43,7 @@ public class UsersController : ControllerBase
         return Ok(updatedUser);
     }
 
+    [AllowAnonymous]
     [HttpPost]
     public ActionResult<UserDto> Create([FromBody] CreateUserDto dto)
     {
@@ -45,6 +51,7 @@ public class UsersController : ControllerBase
         return Created($"/api/user/{id}", null);
     }
 
+    [Authorize(Policy = "SelfRequirment")]
     [HttpDelete("{id}")]
     public ActionResult DeleteUser([FromRoute] int id)
     {

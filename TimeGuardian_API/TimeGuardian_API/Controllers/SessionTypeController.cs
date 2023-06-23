@@ -1,12 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 using TimeGuardian_API.Models.SessionType;
 using TimeGuardian_API.Services;
 
 namespace TimeGuardian_API.Controllers;
 
-[Route("api/sessiontype")]
+[Authorize(Roles = "Admin")]
 [ApiController]
+[Route("api/sessiontype")]
 public class SessionTypeController : ControllerBase
 {
     private readonly ISessionTypeService _sessionTypeService;

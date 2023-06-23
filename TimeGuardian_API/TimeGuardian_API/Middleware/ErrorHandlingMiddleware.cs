@@ -27,6 +27,11 @@ public class ErrorHandlingMiddleware : IMiddleware
             context.Response.StatusCode = 409;
             await context.Response.WriteAsync(alreadyExistException.Message);
         }
+        catch (LoginException loginException)
+        {
+            context.Response.StatusCode = 400;
+            await context.Response.WriteAsync(loginException.Message);
+        }
         catch (Exception exception)
         {
             _logger.LogError(exception, exception.Message);

@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Net.Http.Headers;
 
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 
 using TimeGuardian_API.Data;
@@ -29,17 +31,22 @@ public class LoginController : ControllerBase
     public ActionResult Login([FromBody] LoginDto dto)
     {
         var token = _loginService.GenerateJwt(dto);
-
         return Ok(token);
     }
 
-    //[HttpPost]
-    //[AllowAnonymous]
-    //public ActionResult RefreshToken([FromBody] LoginDto dto)
-    //{
-    //    var token = _loginService.GenerateJwt(dto);
+    [HttpPost]
+    [Route("refresh")]
+    public ActionResult RefreshToken([FromBody] string refreshToken)
+    {
+        var token = Request.Headers[HeaderNames.Authorization].ToString().Replace("Bearer ", "");
 
-    //    return Ok(token);
-    //}
+        var dto = new RefreshTokenDto()
+        {
+            Token = token,
+            RefreshToken = refreshToken
+        };
 
+        var newTokens = _loginService.RefreshJwt(dto);
+        return Ok(newTokens);
+    }
 }

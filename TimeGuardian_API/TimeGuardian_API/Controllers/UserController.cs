@@ -10,11 +10,11 @@ namespace TimeGuardian_API.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/user")]
-public class UsersController : ControllerBase
+public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
 
-    public UsersController(IUserService userService)
+    public UserController(IUserService userService)
     {
         _userService = userService;
     }
@@ -25,6 +25,15 @@ public class UsersController : ControllerBase
     {
         var users = _userService.GetAll();
         return Ok(users);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPatch]
+    [Route("{id}/role/{roleId}")]
+    public ActionResult ChangeRole([FromRoute] int id, [FromRoute] int roleId)
+    {
+        _userService.ChangeRole(id, roleId);
+        return Ok();
     }
 
     [Authorize(Policy = "SelfRequirment")]
@@ -43,6 +52,14 @@ public class UsersController : ControllerBase
         return Ok(updatedUser);
     }
 
+    [Authorize(Policy = "SelfRequirment")]
+    [HttpPatch("{id}")]
+    public ActionResult<UserDto> Patch([FromBody] PatchUserDto dto, [FromRoute] int id)
+    {
+        var user = _userService.Patch(dto, id);
+        return Ok(user);
+    }
+
     [AllowAnonymous]
     [HttpPost]
     public ActionResult<UserDto> Create([FromBody] CreateUserDto dto)
@@ -58,4 +75,6 @@ public class UsersController : ControllerBase
         _userService.Delete(id);
         return NoContent();
     }
+
+
 }

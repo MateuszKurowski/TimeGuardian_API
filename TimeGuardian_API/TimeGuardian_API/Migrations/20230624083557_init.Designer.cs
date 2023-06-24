@@ -11,7 +11,7 @@ using TimeGuardian_API.Data;
 namespace TimeGuardian_API.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    [Migration("20230623183014_init")]
+    [Migration("20230624083557_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -123,6 +123,12 @@ namespace TimeGuardian_API.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("RefreshTokenExpiryTime")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
 
@@ -156,6 +162,16 @@ namespace TimeGuardian_API.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<string>("Nationality")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int?>("RoleId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RoleName")
                         .HasColumnType("longtext");
 
                     b.HasKey("Id");

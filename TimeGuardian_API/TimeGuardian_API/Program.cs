@@ -23,6 +23,7 @@ using TimeGuardian_API.Middleware;
 using TimeGuardian_API.Models;
 using TimeGuardian_API.Models.Role;
 using TimeGuardian_API.Models.SessionType;
+using TimeGuardian_API.Models.User;
 using TimeGuardian_API.Models.Validators;
 using TimeGuardian_API.Services;
 
@@ -52,10 +53,13 @@ builder.Services.AddAuthentication(option =>
 {
     cfg.RequireHttpsMetadata = false;
     cfg.SaveToken = true;
+
     cfg.TokenValidationParameters = new TokenValidationParameters
     {
         ValidIssuer = autheticationSetting.JwtIssuer,
         ValidAudience = autheticationSetting.JwtIssuer,
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(autheticationSetting.JwtKey)),
     };
 });
@@ -77,6 +81,7 @@ builder.Logging.ClearProviders();
 builder.Host.UseNLog();
 
 builder.Services.AddScoped<ILoginService, LoginService>();
+builder.Services.AddScoped<IUtilityService, UtilityService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<ISessionTypeService, SessionTypeService>();
 builder.Services.AddScoped<IUserService, UserService>();
@@ -84,6 +89,7 @@ builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
 builder.Services.AddScoped<IValidator<CreateUserDto>, CreateUserDtoValidator>();
 builder.Services.AddScoped<IValidator<LoginDto>, LoginDtoValidator>();
+builder.Services.AddScoped<IValidator<PasswordDto>, PasswordDtoValidator>();
 builder.Services.AddScoped<IValidator<CreateSessionTypeDto>, CreateSesstionTypeDtoValidator>();
 builder.Services.AddScoped<IValidator<CreateRoleDto>, CreateRoleDtoValidator>();
 builder.Services.AddScoped<ErrorHandlingMiddleware>();

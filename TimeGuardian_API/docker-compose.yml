@@ -2,7 +2,7 @@ version: '3.4'
 
 services:
   timeguardian_db:
-        image: "mariadb:10.3"
+        image: "mariadb:10.3.39"
         container_name: "TimeGuardian_DB"
         restart: always
         environment:

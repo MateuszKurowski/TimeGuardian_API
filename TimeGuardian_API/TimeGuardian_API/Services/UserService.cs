@@ -110,6 +110,7 @@ public class UserService : IUserService
                 throw new AlreadyExistsException(AlreadyExistsException.Entities.User, dto.Email);
             else user.Email = dto.Email;
         }
+
         if (dto.Nationality != null)
             user.Nationality = dto.Nationality;
         if (dto.FirstName != null)
@@ -131,6 +132,11 @@ public class UserService : IUserService
         user.Deleted = true;
         user.RefreshToken = null;
         user.RefreshTokenExpiryTime = null;
+
+        var userSessions = _dbContext.Sessions.Where(x => x.UserId == id).ToList();
+        foreach ( var session in userSessions)
+            session.Deleted = true;
+
         _dbContext.SaveChanges();
     }
 
@@ -150,7 +156,6 @@ public class UserService : IUserService
     {
         var user = _dbContext.Users.FirstOrDefault(u => u.Id == id)
             ?? throw new NotFoundException(NotFoundException.Entities.User);
-        //var currentPasswordHash = _passwordHasher.HashPassword(user, dto.CurrentPassword);
         var newPasswordHash = _passwordHasher.HashPassword(user, dto.NewPassword);
 
         var passwordVerificationResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, dto.CurrentPassword);

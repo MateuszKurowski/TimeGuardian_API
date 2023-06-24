@@ -11,7 +11,7 @@ using TimeGuardian_API.Data;
 namespace TimeGuardian_API.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    [Migration("20230624083557_init")]
+    [Migration("20230624133111_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -139,46 +139,6 @@ namespace TimeGuardian_API.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("TimeGuardian_API.Models.User.UserDto", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("DateOfBirth")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("FirstName")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("LastName")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Nationality")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<int?>("RoleId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("RoleName")
-                        .HasColumnType("longtext");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("UserDto");
-                });
-
             modelBuilder.Entity("TimeGuardian_API.Entities.Session", b =>
                 {
                     b.HasOne("TimeGuardian_API.Entities.SessionType", "SessionType")
@@ -187,7 +147,7 @@ namespace TimeGuardian_API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TimeGuardian_API.Models.User.UserDto", "User")
+                    b.HasOne("TimeGuardian_API.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)

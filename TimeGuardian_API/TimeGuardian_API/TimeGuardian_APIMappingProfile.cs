@@ -3,6 +3,7 @@
 using TimeGuardian_API.Entities;
 using TimeGuardian_API.Models;
 using TimeGuardian_API.Models.Role;
+using TimeGuardian_API.Models.Session;
 using TimeGuardian_API.Models.SessionType;
 using TimeGuardian_API.Models.User;
 
@@ -36,6 +37,14 @@ public class TimeGuardian_APIMappingProfile : Profile
 
         CreateMap<Role, CreateRoleDto>();
         CreateMap<CreateRoleDto, Role>();
+        #endregion
+
+        #region Session
+        CreateMap<SessionDto, Session>();
+        CreateMap<Session, SessionDto>();
+
+        CreateMap<Session, CreateSessionDto>();
+        CreateMap<CreateSessionDto, Session>();
         #endregion
     }
 }

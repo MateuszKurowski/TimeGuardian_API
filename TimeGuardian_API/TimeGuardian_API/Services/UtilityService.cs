@@ -29,6 +29,7 @@ public class UtilityService : IUtilityService
         {
             ValidateAudience = false,
             ValidateIssuer = false,
+            ValidateLifetime = false,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_authenticationSettings.JwtKey)),
         };
 

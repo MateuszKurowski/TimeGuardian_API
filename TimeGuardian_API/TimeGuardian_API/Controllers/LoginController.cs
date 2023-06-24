@@ -35,6 +35,7 @@ public class LoginController : ControllerBase
     }
 
     [HttpPost]
+    [AllowAnonymous]
     [Route("refresh")]
     public ActionResult RefreshToken([FromBody] string refreshToken)
     {

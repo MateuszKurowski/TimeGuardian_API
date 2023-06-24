@@ -1,110 +1,76 @@
-﻿//using Microsoft.AspNetCore.Authorization;
-//using Microsoft.AspNetCore.Mvc;
-//using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
-//using TimeGuardian_API.Data;
-//using TimeGuardian_API.Entities;
+using TimeGuardian_API.Models.Session;
+using TimeGuardian_API.Services;
 
-//namespace TimeGuardian_API.Controllers;
+namespace TimeGuardian_API.Controllers;
 
-////[Authorize]
-//[Route("timeguardian/[controller]")]
-//[ApiController]
-//public class SessionsController : ControllerBase
-//{
-//    private readonly ApiDbContext _context;
+[Authorize]
+[Route("api/session")]
+[ApiController]
+public class SessionsController : ControllerBase
+{
+    private readonly ISessionService _sessionService;
 
-//    public SessionsController(ApiDbContext context)
-//    {
-//        _context = context;
-//    }
+    public SessionsController(ISessionService sessionService)
+    {
+        _sessionService = sessionService;
+    }
 
-//    // GET: api/Sessions
-//    [HttpGet]
-//    public async Task<ActionResult<IEnumerable<Session>>> GetSessions()
-//    {
-//        return await _context.Sessions.Include(x => x.User).Include(x => x.SessionType).ToListAsync();
-//    }
+    [HttpGet]
+    public ActionResult<IEnumerable<SessionDto>> GetAll()
+        => Ok(_sessionService.GetAll());
 
-//    //// GET: api/Sessions
-//    //[Route("GetSessionsByUserId/{userId}")]
-//    //[HttpGet]
-//    //public async Task<ActionResult<IEnumerable<Session>>> GetSessionsByUserId(int userId)
-//    //{
-//    //    var sessions = await _context.Sessions.Include(x => x.User).Include(x => x.SessionType).Where(x => x.UserId == userId).ToListAsync();
-//    //    if (sessions.Any())
-//    //        return Ok(sessions);
-//    //    else return NotFound();
-//    //}
+    [HttpGet("{id}")]
+    public ActionResult<SessionDto> Get([FromRoute] int id)
+    {
+        var sessionType = _sessionService.GetById(id);
+        return Ok(sessionType);
+    }
 
-//    //// GET: api/Sessions/5
-//    //[HttpGet("{id}")]
-//    //public async Task<ActionResult<Session>> GetSession(int id)
-//    //{
-//    //    var session = await _context.Sessions.Include(x => x.User).Include(x => x.SessionType).Where(x => x.Id == id).FirstAsync();
+    [HttpPut("{id}")]
+    public ActionResult<SessionDto> Update([FromBody] CreateSessionDto dto, [FromRoute] int id)
+    {
+        var sessionType = _sessionService.Update(dto, id);
+        return Ok(sessionType);
+    }
 
-//    //    if (session == null)
-//    //        return NotFound();
-//    //    else
-//    //        return session;
-//    //}
+    [HttpPatch("{id}")]
+    public ActionResult<SessionDto> Patch([FromBody] PatchSessionDto dto, [FromRoute] int id)
+    {
+        var sessionType = _sessionService.Patch(dto, id);
+        return Ok(sessionType);
+    }
 
-//    //// PUT: api/Sessions/5
-//    //[HttpPut("{id}")]
-//    //public async Task<IActionResult> PutSession(int id, SessionUpdateDTO sessionDTO)
-//    //{
-//    //    var session = await _context.Sessions.FindAsync(id);
-//    //    if (session == null)
-//    //    {
-//    //        return NotFound();
-//    //    }
+    [HttpPost]
+    public ActionResult Create([FromBody] CreateSessionDto dto)
+    {
+        var id = _sessionService.Create(dto);
+        return Created($"/api/session/{id}", null);
+    }
 
-//    //    session.StartTime = sessionDTO.StartTime;
-//    //    session.EndTime = sessionDTO.EndTime;
-//    //    session.Duration = sessionDTO.Duration;
-//    //    session.SessionTypeId = sessionDTO.SessionTypeId;
+    [HttpDelete("{id}")]
+    public ActionResult Delete([FromRoute] int id)
+    {
+        _sessionService.Delete(id);
+        return NoContent();
+    }
 
-//    //    await _context.SaveChangesAsync();
+    [HttpPost]
+    [Route("start")]
+    public ActionResult StartSession([FromBody] StartSessionDto dto)
+    {
+        var id = _sessionService.StartSession(dto);
+        return Created($"/api/session/{id}", null);
+    }
 
-//    //    return NoContent();
-//    //}
 
-//    //// POST: api/Sessions
-//    //[HttpPost]
-//    //public async Task<ActionResult<Session>> PostSession(SessionDTO sessionDTO)
-//    //{
-//    //    var session = new Session
-//    //    {
-//    //        UserId = sessionDTO.UserId,
-//    //        EndTime = sessionDTO.EndTime,
-//    //        StartTime = sessionDTO.StartTime,
-//    //        Duration = sessionDTO.Duration,
-//    //    };
-
-//    //    _context.Sessions.Add(session);
-//    //    await _context.SaveChangesAsync();
-
-//    //    return CreatedAtAction("GetSession", new { id = session.Id }, session);
-//    //}
-
-//    //// DELETE: api/Sessions/5
-//    //[HttpDelete("{id}")]
-//    //public async Task<ActionResult<Session>> DeleteSession(int id)
-//    //{
-//    //    var session = await _context.Sessions.FindAsync(id);
-//    //    if (session == null)
-//    //    {
-//    //        return NotFound();
-//    //    }
-
-//    //    _context.Sessions.Remove(session);
-//    //    await _context.SaveChangesAsync();
-
-//    //    return session;
-//    //}
-
-//    //private bool SessionExists(int id)
-//    //{
-//    //    return _context.Sessions.Any(e => e.Id == id);
-//    //}
-//}
+    [HttpPost]
+    [Route("end")]
+    public ActionResult EndSession([FromBody] EndSessionDto dto)
+    {
+        var id = _sessionService.EndSession(dto);
+        return Created($"/api/session/{id}", null);
+    }
+}

@@ -17,18 +17,15 @@ services:
     build:
       context: .
       dockerfile: TimeGuardian_API/Dockerfile
-    depends_on:
-        timeguardian_db:
-            condition: service_healthy  
     ports:
      -  9012:80
      -  9011:443
     environment:
+      - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_HTTPS_PORT=9012
       - ASPNETCORE_Kestrel__Certificates__Default__Password=mypass123
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
       - ASPNETCORE_URLS=http://:80/;https://:443
-      - ASPNETCORE_ENVIRONMENT=Development
     volumes:
      - ./TimeGuardian_API/https/aspnetapp.pfx:/https/aspnetapp.pfx:ro
 

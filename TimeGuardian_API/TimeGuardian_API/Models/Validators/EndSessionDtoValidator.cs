@@ -9,26 +9,6 @@ public class EndSessionDtoValidator : AbstractValidator<EndSessionDto>
 {
     public EndSessionDtoValidator(ApiDbContext dbContext)
     {
-        RuleFor(x => x.UserId)
-            .NotEmpty()
-            .Custom((value, context) =>
-            {
-                var userExists = dbContext.Users.Any(u => u.Id == value);
-                if (!userExists)
-                {
-                    context.AddFailure("UserId", $"User with ID: '{value}' does not exists.");
-                }
-            });
 
-        RuleFor(x => x.SessionTypeId)
-            .NotEmpty()
-            .Custom((value, context) =>
-            {
-                var sessionTypeExists = dbContext.SessionTypes.Any(u => u.Id == value);
-                if (!sessionTypeExists)
-                {
-                    context.AddFailure("SessionTypeId", $"Session type with ID: '{value}' does not exists.");
-                }
-            });
     }
 }

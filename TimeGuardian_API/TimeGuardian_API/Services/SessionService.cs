@@ -1,7 +1,11 @@
 ﻿using AutoMapper;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 
+using System.Security.Claims;
+
+using TimeGuardian_API.Authorization;
 using TimeGuardian_API.Data;
 using TimeGuardian_API.Entities;
 using TimeGuardian_API.Exceptions;
@@ -12,14 +16,23 @@ namespace TimeGuardian_API.Services;
 public interface ISessionService
 {
     int Create(CreateSessionDto dto);
+    int CreateByAccount(CreateSessionDtoByAccount dto, ClaimsPrincipal user);
     void Delete(int id);
-    int EndSession(EndSessionDto dto);
+    void DeleteByAccount(int id, ClaimsPrincipal user);
+    SessionDto EndSession(EndSessionDto dto, int id);
+    SessionDto EndSessionByAccount(EndSessionDto dto, int id, ClaimsPrincipal user);
     IEnumerable<SessionDto> GetAll();
+    IEnumerable<SessionDto> GetAllByAccount(ClaimsPrincipal user);
     SessionDto GetById(int id);
+    SessionDto GetByIdByAccount(int id, ClaimsPrincipal user);
     IEnumerable<SessionDto> GetSessionByUserId(int userId, string? order = null, string? orderBy = null);
-    IEnumerable<SessionDto> GetSessionByUserIdAndTypeId(int userId, int typeId, string order, string orderBy);
+    IEnumerable<SessionDto> GetSessionByUserIdAndTypeId(int userId, int typeId, string? order, string? orderBy);
+    IEnumerable<SessionDto> GetSessionByUserIdAndTypeIdByAccount(ClaimsPrincipal user, int typeId, string? order, string? orderBy);
+    IEnumerable<SessionDto> GetSessionByUserIdByAccount(ClaimsPrincipal user, string? order = null, string? orderBy = null);
     SessionDto Patch(PatchSessionDto dto, int id);
+    SessionDto PatchByAccount(PatchSessionDtoByAccount dto, int id, ClaimsPrincipal user);
     int StartSession(StartSessionDto dto);
+    int StartSessionByAccount(StartSessionDtoByAccount dto, ClaimsPrincipal user);
     SessionDto Update(CreateSessionDto dto, int id);
 }
 
@@ -27,6 +40,7 @@ public class SessionService : ISessionService
 {
     private readonly ApiDbContext _dbContext;
     private readonly IMapper _mapper;
+    private readonly IAuthorizationService _authorizationService;
 
     public enum Order
     {
@@ -43,10 +57,11 @@ public class SessionService : ISessionService
         UserId,
     }
 
-    public SessionService(ApiDbContext dbContext, IMapper mapper)
+    public SessionService(ApiDbContext dbContext, IMapper mapper, IAuthorizationService authorizationService)
     {
         _dbContext = dbContext;
         _mapper = mapper;
+        _authorizationService = authorizationService;
     }
 
     #region CRUD
@@ -54,16 +69,21 @@ public class SessionService : ISessionService
     {
         var session = _dbContext
                         .Sessions
-                        .FirstOrDefault(r => r.Id == id);
+                        .Include(x => x.User)
+                        .Include(x => x.SessionType)
+                        .FirstOrDefault(r => r.Id == id && !r.Deleted)
+                        ?? throw new NotFoundException(NotFoundException.Entities.Session);
 
-        if (session is null)
-            throw new NotFoundException(NotFoundException.Entities.Session);
-        else return _mapper.Map<SessionDto>(session);
+        return _mapper.Map<SessionDto>(session);
     }
 
     public IEnumerable<SessionDto> GetAll()
     {
-        var sessions = _dbContext.Sessions?.Select(session => _mapper.Map<SessionDto>(session));
+        var sessions = _dbContext.Sessions
+            ?.Include(x => x.User)
+            ?.Include(x => x.SessionType)
+            ?.Where(x => !x.Deleted)
+            ?.Select(session => _mapper.Map<SessionDto>(session));
 
         return sessions is null
             ? Enumerable.Empty<SessionDto>()
@@ -74,16 +94,18 @@ public class SessionService : ISessionService
     {
         var session = _dbContext
                         .Sessions
-                        .FirstOrDefault(r => r.Id == id)
+                        ?.Include(x => x.User)
+                        ?.Include(x => x.SessionType)
+                        .FirstOrDefault(r => r.Id == id && !r.Deleted)
                         ?? throw new NotFoundException(NotFoundException.Entities.Session);
 
         session.StartTime = dto.StartTime;
         session.EndTime = dto.EndTime;
         if (session.EndTime.HasValue)
-            session.Duration = session.EndTime.Value.Second - session.StartTime.Second;
+            session.Duration = ((int)(session.EndTime.Value - session.StartTime).TotalSeconds);
 
-        var user = _dbContext.Users.FirstOrDefault(x => x.Id == dto.UserId && !x.Deleted);
-        if (user != null)
+        var userDao = _dbContext.Users.FirstOrDefault(x => x.Id == dto.UserId && !x.Deleted);
+        if (userDao != null)
             session.UserId = dto.UserId;
         var sessionType = _dbContext.SessionTypes.FirstOrDefault(x => x.Id == dto.SessionTypeId);
         if (sessionType != null)
@@ -98,7 +120,9 @@ public class SessionService : ISessionService
     {
         var session = _dbContext
                         .Sessions
-                        .FirstOrDefault(r => r.Id == id)
+                        .Include(x => x.User)
+                        .Include(x => x.SessionType)
+                        .FirstOrDefault(r => r.Id == id && !r.Deleted)
                         ?? throw new NotFoundException(NotFoundException.Entities.Session);
 
         if (dto.StartTime.HasValue)
@@ -108,20 +132,26 @@ public class SessionService : ISessionService
             session.EndTime = dto.EndTime;
 
         if (session.EndTime.HasValue)
-            session.Duration = session.EndTime.Value.Second - session.StartTime.Second;
+            session.Duration = ((int)(session.EndTime.Value - session.StartTime).TotalSeconds);
 
         if (dto.UserId.HasValue)
         {
-            var user = _dbContext.Users.FirstOrDefault(x => x.Id == dto.UserId && !x.Deleted);
-            if (user != null)
+            var userDao = _dbContext.Users.FirstOrDefault(x => x.Id == dto.UserId && !x.Deleted);
+            if (userDao != null)
+            {
                 session.UserId = dto.UserId.Value;
+                session.User = userDao;
+            }
         }
 
         if (dto.SessionTypeId.HasValue)
         {
             var sessionType = _dbContext.SessionTypes.FirstOrDefault(x => x.Id == dto.SessionTypeId);
             if (sessionType != null)
+            {
                 session.SessionTypeId = dto.SessionTypeId.Value;
+                session.SessionType = sessionType;
+            }
         }
 
         _dbContext.SaveChanges();
@@ -134,7 +164,7 @@ public class SessionService : ISessionService
         var session = _mapper.Map<Session>(dto);
 
         if (session.EndTime.HasValue)
-            session.Duration = session.EndTime.Value.Second - session.StartTime.Second;
+            session.Duration = ((int)(session.EndTime.Value - session.StartTime).TotalSeconds);
 
         _dbContext.Sessions.Add(session);
         _dbContext.SaveChanges();
@@ -146,10 +176,10 @@ public class SessionService : ISessionService
     {
         var session = _dbContext
                         .Sessions
-                        .FirstOrDefault(r => r.Id == id)
+                        .FirstOrDefault(r => r.Id == id && !r.Deleted)
                         ?? throw new NotFoundException(NotFoundException.Entities.Session);
 
-        _dbContext.Sessions.Remove(session);
+        session.Deleted = true;
         _dbContext.SaveChanges();
     }
     #endregion
@@ -159,7 +189,7 @@ public class SessionService : ISessionService
         var user = _dbContext.Users.FirstOrDefault(x => x.Id == userId && !x.Deleted)
             ?? throw new NotFoundException(NotFoundException.Entities.User);
 
-        var sessions = _dbContext.Sessions.Where(s => s.UserId == userId).Include(x => x.User).Include(x => x.SessionType);
+        var sessions = _dbContext.Sessions.Where(s => s.UserId == userId && !s.Deleted).Include(x => x.User).Include(x => x.SessionType);
         if (sessions is null || !sessions.Any())
             return Enumerable.Empty<SessionDto>();
         var orderEnum = CheckOrder(order);
@@ -168,12 +198,12 @@ public class SessionService : ISessionService
         return OrderSession(sessions, orderEnum, orderByEnum);
     }
 
-    public IEnumerable<SessionDto> GetSessionByUserIdAndTypeId(int userId, int typeId, string order, string orderBy)
+    public IEnumerable<SessionDto> GetSessionByUserIdAndTypeId(int userId, int typeId, string? order, string? orderBy)
     {
         var user = _dbContext.Users.FirstOrDefault(x => x.Id == userId && !x.Deleted)
             ?? throw new NotFoundException(NotFoundException.Entities.User);
 
-        var sessions = _dbContext.Sessions.Where(s => s.UserId == userId).Include(x => x.User).Include(x => x.SessionType).Where(x => x.SessionTypeId == typeId);
+        var sessions = _dbContext.Sessions.Where(s => s.UserId == userId && !s.Deleted).Include(x => x.User).Include(x => x.SessionType).Where(x => x.SessionTypeId == typeId);
         if (sessions is null || !sessions.Any())
             return Enumerable.Empty<SessionDto>();
         var orderEnum = CheckOrder(order);
@@ -194,24 +224,219 @@ public class SessionService : ISessionService
             Deleted = false
         };
         _dbContext.Sessions.Add(session);
+        _dbContext.SaveChanges();
         return session.Id;
     }
 
-    public int EndSession(EndSessionDto dto)
+    public SessionDto EndSession(EndSessionDto dto, int id)
     {
         dto.EndTime ??= DateTime.Now;
 
-        var session = _dbContext.Sessions.Include(x => x.SessionType).FirstOrDefault(x => x.Id == dto.SessionTypeId)
+        var session = _dbContext.Sessions.Include(x => x.SessionType).Include(x => x.User).FirstOrDefault(x => x.Id == id && !x.Deleted)
             ?? throw new NotFoundException(NotFoundException.Entities.Session);
 
-        session.EndTime = dto.EndTime;
-        session.Duration = session.EndTime.Value.Second - session.StartTime.Second;
+        if (session.EndTime.HasValue)
+            throw new SessionAlreadyEndException();
 
+        if (dto.EndTime.Value <= session.StartTime)
+            throw new BadRequestException("End time cannot be earlier than start time.");
+
+        session.EndTime = dto.EndTime;
+        session.Duration = ((int)(session.EndTime.Value - session.StartTime).TotalSeconds);
+
+        _dbContext.SaveChanges();
+
+        return _mapper.Map<SessionDto>(session);
+    }
+
+
+    #region ByAccount
+
+    public int StartSessionByAccount(StartSessionDtoByAccount dto, ClaimsPrincipal user)
+    {
+        var userId = user.FindFirst(x => x.Type == ClaimTypes.NameIdentifier)?.Value
+            ?? throw new Exception("userId is null");
+
+        dto.StartTime ??= DateTime.Now;
+
+        var session = new Session()
+        {
+            UserId = int.Parse(userId),
+            StartTime = (DateTime)dto.StartTime,
+            SessionTypeId = dto.SessionTypeId,
+            Deleted = false
+        };
+        _dbContext.Sessions.Add(session);
+        _dbContext.SaveChanges();
+        return session.Id;
+    }
+
+    public SessionDto EndSessionByAccount(EndSessionDto dto, int id, ClaimsPrincipal user)
+    {
+        dto.EndTime ??= DateTime.Now;
+
+        var session = _dbContext.Sessions.Include(x => x.SessionType).Include(x => x.User).FirstOrDefault(x => x.Id == id && !x.Deleted)
+            ?? throw new NotFoundException(NotFoundException.Entities.Session);
+
+        var authorizationResult = _authorizationService.AuthorizeAsync(user, session, new ResourceSelfRequirment()).Result;
+        if (!authorizationResult.Succeeded)
+            throw new ForbidException();
+
+        if (session.EndTime.HasValue)
+            throw new SessionAlreadyEndException();
+        
+        if (dto.EndTime.Value <= session.StartTime)
+            throw new BadRequestException("End time cannot be earlier than start time.");
+
+        session.EndTime = dto.EndTime;
+        session.Duration = ((int)(session.EndTime.Value - session.StartTime).TotalSeconds);
+
+        _dbContext.SaveChanges();
+
+        return _mapper.Map<SessionDto>(session);
+    }
+
+    public SessionDto GetByIdByAccount(int id, ClaimsPrincipal user)
+    {
+        var session = _dbContext
+                        .Sessions
+                        .Include(x => x.User)
+                        .Include(x => x.SessionType)
+                        .FirstOrDefault(r => r.Id == id && !r.Deleted)
+                        ?? throw new NotFoundException(NotFoundException.Entities.Session);
+
+        var authorizationResult = _authorizationService.AuthorizeAsync(user, session, new ResourceSelfRequirment()).Result;
+        if (!authorizationResult.Succeeded)
+            throw new ForbidException();
+
+        return _mapper.Map<SessionDto>(session);
+    }
+
+    public IEnumerable<SessionDto> GetAllByAccount(ClaimsPrincipal user)
+    {
+        var userId = user.FindFirst(x => x.Type == ClaimTypes.NameIdentifier)?.Value
+            ?? throw new Exception("userId is null");
+
+        var sessions = _dbContext.Sessions
+            ?.Include(x => x.User)
+            ?.Include(x => x.SessionType)
+            ?.Where(x => !x.Deleted && x.UserId == int.Parse(userId))
+            ?.Select(session => _mapper.Map<SessionDto>(session));
+
+        return sessions is null
+            ? Enumerable.Empty<SessionDto>()
+            : sessions;
+    }
+
+    public SessionDto PatchByAccount(PatchSessionDtoByAccount dto, int id, ClaimsPrincipal user)
+    {
+        var session = _dbContext
+                        .Sessions
+                        .Include(x => x.User)
+                        .Include(x => x.SessionType)
+                        .FirstOrDefault(r => r.Id == id && !r.Deleted)
+                        ?? throw new NotFoundException(NotFoundException.Entities.Session);
+
+        var authorizationResult = _authorizationService.AuthorizeAsync(user, session, new ResourceSelfRequirment()).Result;
+        if (!authorizationResult.Succeeded)
+            throw new ForbidException();
+
+        if (dto.StartTime.HasValue)
+        {
+            if (session.EndTime.HasValue && session.EndTime.Value <= session.StartTime)
+                throw new BadRequestException("End time cannot be earlier than start time.");
+            session.StartTime = dto.StartTime.Value;
+        }
+
+        if (session.EndTime.HasValue)
+        {
+            session.EndTime = dto.EndTime;
+            if (session.EndTime.Value <= session.StartTime)
+                throw new BadRequestException("End time cannot be earlier than start time.");
+        }
+
+        if (session.EndTime.HasValue)
+            session.Duration = ((int)(session.EndTime.Value - session.StartTime).TotalSeconds);
+
+        if (dto.SessionTypeId.HasValue)
+        {
+            var sessionType = _dbContext.SessionTypes.FirstOrDefault(x => x.Id == dto.SessionTypeId);
+            if (sessionType != null)
+            {
+                session.SessionTypeId = dto.SessionTypeId.Value;
+                session.SessionType = sessionType;
+            }
+        }
+
+        _dbContext.SaveChanges();
+
+        return _mapper.Map<SessionDto>(session);
+    }
+
+    public int CreateByAccount(CreateSessionDtoByAccount dto, ClaimsPrincipal user)
+    {
+        var session = _mapper.Map<Session>(dto);
+
+        if (session.EndTime.HasValue)
+            session.Duration = ((int)(session.EndTime.Value - session.StartTime).TotalSeconds);
+        var userId = user.FindFirst(x => x.Type == ClaimTypes.NameIdentifier)?.Value
+            ?? throw new Exception("userId is null");
+        session.UserId = int.Parse(userId);
+
+        if (session.EndTime.HasValue && session.EndTime.Value <= session.StartTime)
+            throw new BadRequestException("End time cannot be earlier than start time.");
+
+        _dbContext.Sessions.Add(session);
         _dbContext.SaveChanges();
 
         return session.Id;
     }
 
+    public void DeleteByAccount(int id, ClaimsPrincipal user)
+    {
+        var session = _dbContext
+                        .Sessions
+                        .FirstOrDefault(r => r.Id == id && !r.Deleted)
+                        ?? throw new NotFoundException(NotFoundException.Entities.Session);
+
+        var authorizationResult = _authorizationService.AuthorizeAsync(user, session, new ResourceSelfRequirment()).Result;
+        if (!authorizationResult.Succeeded)
+            throw new ForbidException();
+
+        session.Deleted = true;
+        _dbContext.SaveChanges();
+    }
+
+    public IEnumerable<SessionDto> GetSessionByUserIdByAccount(ClaimsPrincipal user, string? order = null, string? orderBy = null)
+    {
+        var userId = user.FindFirst(x => x.Type == ClaimTypes.NameIdentifier)?.Value
+            ?? throw new Exception("userId is null");
+
+        var sessions = _dbContext.Sessions.Where(s => s.UserId == int.Parse(userId) && !s.Deleted).Include(x => x.User).Include(x => x.SessionType);
+        if (sessions is null || !sessions.Any())
+            return Enumerable.Empty<SessionDto>();
+        var orderEnum = CheckOrder(order);
+        var orderByEnum = CheckOrderBy(orderBy);
+
+        return OrderSession(sessions, orderEnum, orderByEnum);
+    }
+
+    public IEnumerable<SessionDto> GetSessionByUserIdAndTypeIdByAccount(ClaimsPrincipal user, int typeId, string? order, string? orderBy)
+    {
+        var userId = user.FindFirst(x => x.Type == ClaimTypes.NameIdentifier)?.Value
+            ?? throw new Exception("userId is null");
+
+        var sessions = _dbContext.Sessions.Where(s => s.UserId == int.Parse(userId) && !s.Deleted).Include(x => x.User).Include(x => x.SessionType).Where(x => x.SessionTypeId == typeId);
+        if (sessions is null || !sessions.Any())
+            return Enumerable.Empty<SessionDto>();
+        var orderEnum = CheckOrder(order);
+        var orderByEnum = CheckOrderBy(orderBy);
+
+        return OrderSession(sessions, orderEnum, orderByEnum);
+    }
+    #endregion
+
+    #region Private methods 
     private static OrderBy CheckOrderBy(string? orderBy)
     {
         var orderByEnum = OrderBy.StartTime;
@@ -296,5 +521,5 @@ public class SessionService : ISessionService
         var result = sessionsQuery.Select(x => _mapper.Map<SessionDto>(x));
         return result;
     }
+    #endregion
 }
-

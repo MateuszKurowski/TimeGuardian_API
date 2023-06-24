@@ -45,6 +45,12 @@ public class TimeGuardian_APIMappingProfile : Profile
 
         CreateMap<Session, CreateSessionDto>();
         CreateMap<CreateSessionDto, Session>();
+
+        CreateMap<CreateSessionDtoByAccount, Session>();
+        CreateMap<Session, CreateSessionDtoByAccount>();
+
+        CreateMap<Session, PatchSessionDtoByAccount>();
+        CreateMap<PatchSessionDtoByAccount, Session>();
         #endregion
     }
 }

@@ -1,4 +1,6 @@
-﻿using TimeGuardian_API.Exceptions;
+﻿using System.Diagnostics.Eventing.Reader;
+
+using TimeGuardian_API.Exceptions;
 
 namespace TimeGuardian_API.Middleware;
 
@@ -32,15 +34,27 @@ public class ErrorHandlingMiddleware : IMiddleware
             context.Response.StatusCode = 400;
             await context.Response.WriteAsync(loginException.Message);
         }
-        catch (BadRequestException)
+        catch (BadRequestException badRequestException)
         {
             context.Response.StatusCode = 400;
-            await context.Response.WriteAsync("Bad request.");
+            if (badRequestException.Message.Contains("End time cannot be earlier than start time."))
+                await context.Response.WriteAsync(badRequestException.Message);
+            else await context.Response.WriteAsync("Bad request.");
+
         }
         catch (TokenExpireException)
         {
             context.Response.StatusCode = 400;
             await context.Response.WriteAsync("Token has expired. Please log in again.");
+        }
+        catch (SessionAlreadyEndException)
+        {
+            context.Response.StatusCode = 400;
+            await context.Response.WriteAsync("The session has already ended.");
+        }
+        catch (ForbidException)
+        {
+            context.Response.StatusCode = 403;
         }
         catch (Exception exception)
         {

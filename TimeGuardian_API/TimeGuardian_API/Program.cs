@@ -70,6 +70,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("SelfRequirment", build => build.AddRequirements(new SelfRequirement()));
 });
 builder.Services.AddScoped<IAuthorizationHandler, SelfRequirementHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, ResourceSelfRequirmentHandler>();
 builder.Services.AddControllers();
 builder.Services.AddFluentValidationAutoValidation().AddFluentValidationClientsideAdapters();
 

@@ -41,12 +41,12 @@ public class DbSeeder
                 wasChanges = true;
             }
 
-            //if (!_dbContext.Sessions.Any())
-            //{
-            //    var sessions = GetSessions();
-            //    _dbContext.Sessions.AddRange(sessions);
-            //    wasChanges = true;
-            //}
+            if (!_dbContext.Sessions.Any())
+            {
+                var sessions = GetSessions();
+                _dbContext.Sessions.AddRange(sessions);
+                wasChanges = true;
+            }
 
             if (wasChanges)
                 _dbContext.SaveChanges();

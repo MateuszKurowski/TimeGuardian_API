@@ -10,7 +10,7 @@ public class NotFoundException : Exception
         SessionType,
     }
 
-    public NotFoundException(Entities entities)
+    public NotFoundException(Entities entities) : base()
     {
         switch (entities)
         {

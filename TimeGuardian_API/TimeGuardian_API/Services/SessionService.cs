@@ -15,12 +15,12 @@ namespace TimeGuardian_API.Services;
 
 public interface ISessionService
 {
-    int Create(CreateSessionDto dto);
-    int CreateByAccount(CreateSessionDtoByAccount dto, ClaimsPrincipal user);
+    SessionDto Create(CreateSessionDto dto);
+    SessionDto CreateByAccount(CreateSessionDtoByAccount dto, ClaimsPrincipal user);
     void Delete(int id);
     void DeleteByAccount(int id, ClaimsPrincipal user);
     SessionDto EndSession(EndSessionDto dto, int id);
-    SessionDto EndSessionByAccount(EndSessionDto dto, int id, ClaimsPrincipal user);
+    SessionDto EndSessionByAccount(EndSessionDtoByAccount dto, ClaimsPrincipal user);
     IEnumerable<SessionDto> GetAll();
     IEnumerable<SessionDto> GetAllByAccount(ClaimsPrincipal user);
     SessionDto GetById(int id);
@@ -31,8 +31,8 @@ public interface ISessionService
     IEnumerable<SessionDto> GetSessionByUserIdByAccount(ClaimsPrincipal user, string? order = null, string? orderBy = null);
     SessionDto Patch(PatchSessionDto dto, int id);
     SessionDto PatchByAccount(PatchSessionDtoByAccount dto, int id, ClaimsPrincipal user);
-    int StartSession(StartSessionDto dto);
-    int StartSessionByAccount(StartSessionDtoByAccount dto, ClaimsPrincipal user);
+    SessionDto StartSession(StartSessionDto dto);
+    SessionDto StartSessionByAccount(StartSessionDtoByAccount dto, ClaimsPrincipal user);
     SessionDto Update(CreateSessionDto dto, int id);
 }
 
@@ -159,7 +159,7 @@ public class SessionService : ISessionService
         return _mapper.Map<SessionDto>(session);
     }
 
-    public int Create(CreateSessionDto dto)
+    public SessionDto Create(CreateSessionDto dto)
     {
         var session = _mapper.Map<Session>(dto);
 
@@ -169,7 +169,7 @@ public class SessionService : ISessionService
         _dbContext.Sessions.Add(session);
         _dbContext.SaveChanges();
 
-        return session.Id;
+        return _mapper.Map<SessionDto>(session);
     }
 
     public void Delete(int id)
@@ -212,7 +212,7 @@ public class SessionService : ISessionService
         return OrderSession(sessions, orderEnum, orderByEnum);
     }
 
-    public int StartSession(StartSessionDto dto)
+    public SessionDto StartSession(StartSessionDto dto)
     {
         dto.StartTime ??= DateTime.Now;
 
@@ -225,7 +225,9 @@ public class SessionService : ISessionService
         };
         _dbContext.Sessions.Add(session);
         _dbContext.SaveChanges();
-        return session.Id;
+        var sessionFromBase = _dbContext.Sessions.Include(x => x.User).Include(x => x.SessionType).FirstOrDefault(x => x.Id == session.Id);
+
+        return _mapper.Map<SessionDto>(sessionFromBase);
     }
 
     public SessionDto EndSession(EndSessionDto dto, int id)
@@ -252,7 +254,7 @@ public class SessionService : ISessionService
 
     #region ByAccount
 
-    public int StartSessionByAccount(StartSessionDtoByAccount dto, ClaimsPrincipal user)
+    public SessionDto StartSessionByAccount(StartSessionDtoByAccount dto, ClaimsPrincipal user)
     {
         var userId = user.FindFirst(x => x.Type == ClaimTypes.NameIdentifier)?.Value
             ?? throw new Exception("userId is null");
@@ -268,17 +270,19 @@ public class SessionService : ISessionService
         };
         _dbContext.Sessions.Add(session);
         _dbContext.SaveChanges();
-        return session.Id;
+        var sessionFromBase = _dbContext.Sessions.Include(x => x.User).Include(x => x.SessionType).FirstOrDefault(x => x.Id == session.Id);
+
+        return _mapper.Map<SessionDto>(sessionFromBase);
     }
 
-    public SessionDto EndSessionByAccount(EndSessionDto dto, int id, ClaimsPrincipal user)
+    public SessionDto EndSessionByAccount(EndSessionDtoByAccount dto, ClaimsPrincipal user)
     {
         dto.EndTime ??= DateTime.Now;
 
-        var session = _dbContext.Sessions.Include(x => x.SessionType).Include(x => x.User).FirstOrDefault(x => x.Id == id && !x.Deleted)
+        var session = _dbContext.Sessions.Include(x => x.SessionType).Include(x => x.User).FirstOrDefault(x => x.Id == dto.SessionId && !x.Deleted)
             ?? throw new NotFoundException(NotFoundException.Entities.Session);
 
-        var authorizationResult = _authorizationService.AuthorizeAsync(user, session, new ResourceSelfRequirment()).Result;
+        var authorizationResult = _authorizationService.AuthorizeAsync(user, session, new SessionSelfRequirment()).Result;
         if (!authorizationResult.Succeeded)
             throw new ForbidException();
 
@@ -305,7 +309,7 @@ public class SessionService : ISessionService
                         .FirstOrDefault(r => r.Id == id && !r.Deleted)
                         ?? throw new NotFoundException(NotFoundException.Entities.Session);
 
-        var authorizationResult = _authorizationService.AuthorizeAsync(user, session, new ResourceSelfRequirment()).Result;
+        var authorizationResult = _authorizationService.AuthorizeAsync(user, session, new SessionSelfRequirment()).Result;
         if (!authorizationResult.Succeeded)
             throw new ForbidException();
 
@@ -337,7 +341,7 @@ public class SessionService : ISessionService
                         .FirstOrDefault(r => r.Id == id && !r.Deleted)
                         ?? throw new NotFoundException(NotFoundException.Entities.Session);
 
-        var authorizationResult = _authorizationService.AuthorizeAsync(user, session, new ResourceSelfRequirment()).Result;
+        var authorizationResult = _authorizationService.AuthorizeAsync(user, session, new SessionSelfRequirment()).Result;
         if (!authorizationResult.Succeeded)
             throw new ForbidException();
 
@@ -373,7 +377,7 @@ public class SessionService : ISessionService
         return _mapper.Map<SessionDto>(session);
     }
 
-    public int CreateByAccount(CreateSessionDtoByAccount dto, ClaimsPrincipal user)
+    public SessionDto CreateByAccount(CreateSessionDtoByAccount dto, ClaimsPrincipal user)
     {
         var session = _mapper.Map<Session>(dto);
 
@@ -389,7 +393,7 @@ public class SessionService : ISessionService
         _dbContext.Sessions.Add(session);
         _dbContext.SaveChanges();
 
-        return session.Id;
+        return _mapper.Map<SessionDto>(session);
     }
 
     public void DeleteByAccount(int id, ClaimsPrincipal user)
@@ -399,7 +403,7 @@ public class SessionService : ISessionService
                         .FirstOrDefault(r => r.Id == id && !r.Deleted)
                         ?? throw new NotFoundException(NotFoundException.Entities.Session);
 
-        var authorizationResult = _authorizationService.AuthorizeAsync(user, session, new ResourceSelfRequirment()).Result;
+        var authorizationResult = _authorizationService.AuthorizeAsync(user, session, new SessionSelfRequirment()).Result;
         if (!authorizationResult.Succeeded)
             throw new ForbidException();
 

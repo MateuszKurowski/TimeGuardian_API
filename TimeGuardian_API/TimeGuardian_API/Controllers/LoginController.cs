@@ -1,15 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-
-using TimeGuardian_API.Data;
 using TimeGuardian_API.Models;
+using TimeGuardian_API.Models.Login;
 using TimeGuardian_API.Services;
 
 namespace TimeGuardian_API.Controllers;
@@ -37,14 +31,14 @@ public class LoginController : ControllerBase
     [HttpPost]
     [AllowAnonymous]
     [Route("refresh")]
-    public ActionResult RefreshToken([FromBody] string refreshToken)
+    public ActionResult RefreshToken([FromBody] OnlyRefreshTokenDto onlyRefreshToken)
     {
         var token = Request.Headers[HeaderNames.Authorization].ToString().Replace("Bearer ", "");
 
         var dto = new RefreshTokenDto()
         {
             Token = token,
-            RefreshToken = refreshToken
+            RefreshToken = onlyRefreshToken.RefreshToken
         };
 
         var newTokens = _loginService.RefreshJwt(dto);

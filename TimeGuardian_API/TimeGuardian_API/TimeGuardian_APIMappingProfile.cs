@@ -29,6 +29,12 @@ public class TimeGuardian_APIMappingProfile : Profile
 
         CreateMap<SessionType, CreateSessionTypeDto>();
         CreateMap<CreateSessionTypeDto, SessionType>();
+
+        CreateMap<CreateSessionTypeDtoByAccount, SessionType>();
+        CreateMap<SessionType, CreateSessionTypeDtoByAccount>();
+
+        CreateMap<SessionType, GetSessionTypeByNameAndUserIdDto>();
+        CreateMap<GetSessionTypeByNameAndUserIdDto, SessionType>();
         #endregion
 
         #region Role

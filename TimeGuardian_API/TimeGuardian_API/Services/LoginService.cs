@@ -13,6 +13,7 @@ using TimeGuardian_API.Data;
 using TimeGuardian_API.Entities;
 using TimeGuardian_API.Exceptions;
 using TimeGuardian_API.Models;
+using TimeGuardian_API.Models.Login;
 
 namespace TimeGuardian_API.Services;
 

@@ -14,7 +14,7 @@ public class SessionDto
     public int? Duration { get; set; }
 
 
-    public virtual UserDto User { get; set; }
+    public virtual int UserId { get; set; }
 
 
     public virtual SessionTypeDto SessionType { get; set; }

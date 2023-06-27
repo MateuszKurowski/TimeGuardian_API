@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
+using TimeGuardian_API.Models.Login;
 
-namespace TimeGuardian_API.Models.Validators;
+namespace TimeGuardian_API.Validators;
 
 public class LoginDtoValidator : AbstractValidator<LoginDto>
 {

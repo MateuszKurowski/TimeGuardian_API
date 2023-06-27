@@ -21,12 +21,13 @@ using TimeGuardian_API.Data;
 using TimeGuardian_API.Entities;
 using TimeGuardian_API.Middleware;
 using TimeGuardian_API.Models;
+using TimeGuardian_API.Models.Login;
 using TimeGuardian_API.Models.Role;
 using TimeGuardian_API.Models.Session;
 using TimeGuardian_API.Models.SessionType;
 using TimeGuardian_API.Models.User;
-using TimeGuardian_API.Models.Validators;
 using TimeGuardian_API.Services;
+using TimeGuardian_API.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -70,7 +71,8 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("SelfRequirment", build => build.AddRequirements(new SelfRequirement()));
 });
 builder.Services.AddScoped<IAuthorizationHandler, SelfRequirementHandler>();
-builder.Services.AddScoped<IAuthorizationHandler, ResourceSelfRequirmentHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, SessionSelfRequirmentHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, SessionTypeSelfRequirmentHandler>();
 builder.Services.AddControllers();
 builder.Services.AddFluentValidationAutoValidation().AddFluentValidationClientsideAdapters();
 

@@ -3,7 +3,7 @@
 using TimeGuardian_API.Data;
 using TimeGuardian_API.Models.Role;
 
-namespace TimeGuardian_API.Models.Validators;
+namespace TimeGuardian_API.Validators;
 
 public class CreateRoleDtoValidator : AbstractValidator<CreateRoleDto>
 {

@@ -74,12 +74,20 @@ namespace TimeGuardian_API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    b.Property<int?>("CreatedById")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Default")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("varchar(64)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
 
                     b.ToTable("SessionTypes");
                 });
@@ -153,6 +161,15 @@ namespace TimeGuardian_API.Migrations
                     b.Navigation("SessionType");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TimeGuardian_API.Entities.SessionType", b =>
+                {
+                    b.HasOne("TimeGuardian_API.Entities.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById");
+
+                    b.Navigation("CreatedBy");
                 });
 
             modelBuilder.Entity("TimeGuardian_API.Entities.User", b =>

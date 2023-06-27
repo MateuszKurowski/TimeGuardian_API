@@ -35,10 +35,10 @@ public class RoleController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult Create([FromBody] CreateRoleDto roleDto)
+    public ActionResult<RoleDto> Create([FromBody] CreateRoleDto roleDto)
     {
-        var id = _roleService.Create(roleDto);
-        return Created($"/api/role/{id}", null);
+        var role = _roleService.Create(roleDto);
+        return Created($"/api/role/{role.Id}", role);
     }
 
     [HttpDelete("{id}")]

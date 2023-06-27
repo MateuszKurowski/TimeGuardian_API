@@ -1,8 +1,6 @@
 ﻿namespace TimeGuardian_API.Models.SessionType;
 
-public class CreateSessionTypeDto
+public class CreateSessionTypeDtoByAccount
 {
     public string Name { get; set; }
-    
-    public int CreatedById { get; set; }
 }

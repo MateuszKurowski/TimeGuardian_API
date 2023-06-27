@@ -52,10 +52,10 @@ public class SessionsController : ControllerBase
 
     [Authorize(Roles = "Admin")]
     [HttpPost]
-    public ActionResult Create([FromBody] CreateSessionDto dto)
+    public ActionResult<SessionDto> Create([FromBody] CreateSessionDto dto)
     {
-        var id = _sessionService.Create(dto);
-        return Created($"/api/session/{id}", null);
+        var session = _sessionService.Create(dto);
+        return Created($"/api/session/{session.Id}", session);
     }
 
     [Authorize(Roles = "Admin")]
@@ -69,10 +69,10 @@ public class SessionsController : ControllerBase
     [HttpPost]
     [Authorize(Roles = "Admin")]
     [Route("start")]
-    public ActionResult StartSession([FromBody] StartSessionDto dto)
+    public ActionResult<SessionDto> StartSession([FromBody] StartSessionDto dto)
     {
-        var id = _sessionService.StartSession(dto);
-        return Created($"/api/session/{id}", null);
+        var session = _sessionService.StartSession(dto);
+        return Created($"/api/session/{session.Id}", session);
     }
 
     [HttpPatch]
@@ -121,10 +121,10 @@ public class SessionsController : ControllerBase
 
     [HttpPost]
     [Route("account")]
-    public ActionResult CreateByAccount([FromBody] CreateSessionDtoByAccount dto)
+    public ActionResult<SessionDto> CreateByAccount([FromBody] CreateSessionDtoByAccount dto)
     {
-        var id = _sessionService.CreateByAccount(dto, User);
-        return Created($"/api/session/{id}", null);
+        var session = _sessionService.CreateByAccount(dto, User);
+        return Created($"/api/session/{session.Id}", session);
     }
 
     [HttpDelete]
@@ -153,22 +153,17 @@ public class SessionsController : ControllerBase
 
     [HttpPost]
     [Route("account/start")]
-    public ActionResult AccountStartSession([FromBody] int sessionTypeId)
+    public ActionResult<SessionDto> AccountStartSession([FromBody] StartSessionDtoByAccount dto)
     {
-        var dto = new StartSessionDtoByAccount 
-        { 
-            SessionTypeId = sessionTypeId, 
-        };
-        var id = _sessionService.StartSessionByAccount(dto, User);
-        return Created($"/api/session/{id}", null);
+        var session = _sessionService.StartSessionByAccount(dto, User);
+        return Created($"/api/session/{session.Id}", session);
     }
 
     [HttpPatch]
-    [Route("account/end/{id}")]
-    public ActionResult AccountEndSession([FromRoute] int id)
+    [Route("account/end")]
+    public ActionResult<SessionDto> AccountEndSession([FromBody] EndSessionDtoByAccount dto)
     {
-        var dto = new EndSessionDto();
-        var session = _sessionService.EndSessionByAccount(dto, id, User);
+        var session = _sessionService.EndSessionByAccount(dto, User);
         return Ok(session);
     }
     #endregion

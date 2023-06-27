@@ -6,7 +6,7 @@ using TimeGuardian_API.Services;
 
 namespace TimeGuardian_API.Controllers;
 
-[Authorize(Roles = "Admin")]
+[Authorize]
 [ApiController]
 [Route("api/sessiontype")]
 public class SessionTypeController : ControllerBase
@@ -18,6 +18,7 @@ public class SessionTypeController : ControllerBase
         _sessionTypeService = sessionTypeService;
     }
 
+    [Authorize(Roles = "Admmin")]
     [HttpGet]
     public ActionResult<IEnumerable<SessionTypeDto>> GetAll()
         => Ok(_sessionTypeService.GetAll());
@@ -25,28 +26,62 @@ public class SessionTypeController : ControllerBase
     [HttpGet("{id}")]
     public ActionResult<SessionTypeDto> Get([FromRoute] int id)
     {
-        var sessionType = _sessionTypeService.GetById(id);
+        var sessionType = _sessionTypeService.GetById(id, User);
         return Ok(sessionType);
     }
 
-    [HttpPut("{id}")]
-    public ActionResult<SessionTypeDto> Update([FromBody] CreateSessionTypeDto sessionTypeDto, [FromRoute] int id)
+    [Authorize(Roles = "Admmin")]
+    [HttpGet]
+    [Route("name")]
+    public ActionResult<SessionTypeDto> GetByNameAndUserId([FromBody] GetSessionTypeByNameAndUserIdDto dto)
     {
-        var sessionType = _sessionTypeService.Update(sessionTypeDto, id);
+        var sessionType = _sessionTypeService.GetByName(dto);
+        return Ok(sessionType);
+    }
+
+    [Authorize(Roles = "Admmin")]
+    [Route("user/{userId}")]
+    [HttpGet]
+    public ActionResult<IEnumerable<SessionTypeDto>> GetByUserId([FromRoute] int userId)
+    {
+        var sessionTypes = _sessionTypeService.GetByUserId(userId);
+        return Ok(sessionTypes);
+    }
+
+    [Route("account")]
+    [HttpGet]
+    public ActionResult<IEnumerable<SessionTypeDto>> GetByAccount()
+    {
+        var sessionTypes = _sessionTypeService.GetByUserId(User);
+        return Ok(sessionTypes);
+    }
+
+    [HttpPut("{id}")]
+    public ActionResult<SessionTypeDto> Update([FromBody] CreateSessionTypeDto dto, [FromRoute] int id)
+    {
+        var sessionType = _sessionTypeService.Update(dto, id, User);
         return Ok(sessionType);
     }
 
     [HttpPost]
     public ActionResult Create([FromBody] CreateSessionTypeDto sessionTypeDto)
     {
-        var id = _sessionTypeService.Create(sessionTypeDto);
-        return Created($"/api/sessiontype/{id}", null);
+        var sessionType = _sessionTypeService.Create(sessionTypeDto);
+        return Created($"/api/sessiontype/{sessionType.Id}", sessionType);
+    }
+
+    [HttpPost]
+    [Route("account")]
+    public ActionResult Create([FromBody] CreateSessionTypeDtoByAccount dto)
+    {
+        var sessionType = _sessionTypeService.Create(dto, User);
+        return Created($"/api/sessiontype/{sessionType.Id}", sessionType);
     }
 
     [HttpDelete("{id}")]
     public ActionResult Delete([FromRoute] int id)
     {
-        _sessionTypeService.Delete(id);
+        _sessionTypeService.Delete(id, User);
         return NoContent();
     }
 }

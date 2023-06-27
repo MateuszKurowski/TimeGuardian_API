@@ -2,11 +2,11 @@
 
 namespace TimeGuardian_API.Authorization;
 
-public class ResourceSelfRequirment : IAuthorizationRequirement
+public class SessionTypeSelfRequirment : IAuthorizationRequirement
 {
     public string AdminRoleName { get; }
 
-    public ResourceSelfRequirment()
+    public SessionTypeSelfRequirment()
     {
         AdminRoleName = "Admin";
     }

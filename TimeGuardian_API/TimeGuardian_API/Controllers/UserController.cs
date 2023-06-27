@@ -27,7 +27,6 @@ public class UserController : ControllerBase
         return Ok(users);
     }
 
-    [Authorize(Roles = "Admin")]
     [HttpPatch]
     [Route("{id}/role/{roleId}")]
     public ActionResult ChangeRole([FromRoute] int id, [FromRoute] int roleId)
@@ -64,8 +63,8 @@ public class UserController : ControllerBase
     [HttpPost]
     public ActionResult<UserDto> Create([FromBody] CreateUserDto dto)
     {
-        var id = _userService.Create(dto);
-        return Created($"/api/user/{id}", null);
+        var user = _userService.Create(dto);
+        return Created($"/api/user/{user.Id}", user);
     }
 
     [Authorize(Policy = "SelfRequirment")]

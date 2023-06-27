@@ -15,7 +15,7 @@ public interface IUserService
 {
     void ChangePassword(PasswordDto dto, int id);
     void ChangeRole(int userId, int roleId);
-    int Create(CreateUserDto dto);
+    UserDto Create(CreateUserDto dto);
     void Delete(int id);
     IEnumerable<UserDto> GetAll();
     UserDto GetById(int id);
@@ -54,7 +54,7 @@ public class UserService : IUserService
             : _mapper.Map<UserDto>(user);
     }
 
-    public int Create(CreateUserDto dto)
+    public UserDto Create(CreateUserDto dto)
     {
         var user = _mapper.Map<User>(dto);
 
@@ -66,7 +66,7 @@ public class UserService : IUserService
         user.CreatedAt = DateTime.Now;
         _dbContext.Add(user);
         _dbContext.SaveChanges();
-        return user.Id;
+        return _mapper.Map<UserDto>(user);
     }
 
     public UserDto Update(CreateUserDto dto, int id)

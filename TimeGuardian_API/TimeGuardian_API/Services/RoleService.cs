@@ -9,7 +9,7 @@ namespace TimeGuardian_API.Services;
 
 public interface IRoleService
 {
-    int Create(CreateRoleDto roleDto);
+    RoleDto Create(CreateRoleDto roleDto);
     void Delete(int id);
     IEnumerable<RoleDto> GetAll();
     RoleDto GetById(int id);
@@ -73,14 +73,14 @@ public class RoleService : IRoleService
         return _mapper.Map<RoleDto>(role);
     }
 
-    public int Create(CreateRoleDto dto)
+    public RoleDto Create(CreateRoleDto dto)
     {
         var role = _mapper.Map<Role>(dto);
         _dbContext.Roles.Add(role);
 
         _dbContext.SaveChanges();
 
-        return role.Id;
+        return _mapper.Map<RoleDto>(role);
     }
 
     public void Delete(int id)

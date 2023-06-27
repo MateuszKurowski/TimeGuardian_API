@@ -123,19 +123,25 @@ public class DbSeeder
                 new SessionType()
                 {
                     Id = 1,
-                    Name = "Nauka"
+                    Name = "Nauka",
+                    CreatedById = null,
+                    Default = true
                 },
 
                 new SessionType()
                 {
                     Id = 2,
-                    Name = "Praca"
+                    Name = "Praca",
+                    CreatedById = null,
+                    Default = true
                 },
 
                 new SessionType()
                 {
                     Id = 3,
-                    Name = "Prokrastynacja"
+                    Name = "Prokrastynacja",
+                    CreatedById = null,
+                    Default = true
                 }
             };
 

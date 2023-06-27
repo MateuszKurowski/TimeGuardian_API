@@ -2,7 +2,7 @@
 
 using TimeGuardian_API.Models.User;
 
-namespace TimeGuardian_API.Models.Validators;
+namespace TimeGuardian_API.Validators;
 
 public class PasswordDtoValidator : AbstractValidator<PasswordDto>
 {

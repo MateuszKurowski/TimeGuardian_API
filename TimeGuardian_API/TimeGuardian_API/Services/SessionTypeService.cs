@@ -46,15 +46,16 @@ public class SessionTypeService : ISessionTypeService
         var sessionType = _dbContext
                                     .SessionTypes
                                     .Include(x => x.CreatedBy)
-                                    .FirstOrDefault(st => st.Id == id);
-
-        var authorizationResult = _authorizationService.AuthorizeAsync(user, sessionType, requirement: new SessionTypeSelfRequirment()).Result;
-        if (!authorizationResult.Succeeded)
-            throw new ForbidException();
-
-        if (sessionType is null)
-            throw new NotFoundException(NotFoundException.Entities.SessionType);
-        else return _mapper.Map<SessionTypeDto>(sessionType);
+                                    .FirstOrDefault(st => st.Id == id) 
+                                    ?? throw new NotFoundException(NotFoundException.Entities.SessionType);
+        if (!sessionType.Default)
+        {
+            var authorizationResult = _authorizationService.AuthorizeAsync(user, sessionType, requirement: new SessionTypeSelfRequirment()).Result;
+            if (!authorizationResult.Succeeded)
+                throw new ForbidException();
+        }
+        
+        return _mapper.Map<SessionTypeDto>(sessionType);
     }
 
     public SessionTypeDto GetByName(GetSessionTypeByNameAndUserIdDto dto)
@@ -82,9 +83,7 @@ public class SessionTypeService : ISessionTypeService
     {
         var userId = int.Parse(user.FindFirst(x => x.Type == ClaimTypes.NameIdentifier)?.Value);
 
-        var test = _dbContext.SessionTypes?.Where(sessionType => sessionType.CreatedById == userId)?.Include(x => x.CreatedBy);
-            var sessionTypes = test.Select(sessionType => _mapper.Map<SessionTypeDto>(sessionType));
-        //var sessionTypes = _dbContext.SessionTypes?.Where(sessionType => sessionType.CreatedById == userId)?.Include(x => x.CreatedBy)?.Select(sessionType => _mapper.Map<SessionTypeDto>(sessionType));
+        var sessionTypes = _dbContext.SessionTypes?.Where(sessionType => sessionType.CreatedById == userId)?.Include(x => x.CreatedBy)?.Select(sessionType => _mapper.Map<SessionTypeDto>(sessionType));
 
         return sessionTypes is null
             ? Enumerable.Empty<SessionTypeDto>()

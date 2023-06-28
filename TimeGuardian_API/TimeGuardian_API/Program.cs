@@ -112,7 +112,8 @@ builder.Services.AddCors(options =>
     options.AddPolicy("FrontEndClient",
         policy =>
             policy.AllowAnyMethod()
-            .AllowAnyOrigin()));
+            .AllowAnyOrigin()
+            .AllowAnyHeader()));
 
 /* build */
 

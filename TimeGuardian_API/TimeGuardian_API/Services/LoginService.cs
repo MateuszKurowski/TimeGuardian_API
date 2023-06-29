@@ -41,7 +41,7 @@ public class LoginService : ILoginService
     public RefreshTokenDto GenerateJwt(LoginDto dto)
     {
         var user = _dbContext.Users.Include(u => u.Role).FirstOrDefault(u => u.Email == dto.Email && !u.Deleted)
-            ?? throw new LoginException();
+            ?? throw new Exceptions.LoginException();
 
         var passwordVerificationResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
         if (passwordVerificationResult == PasswordVerificationResult.Failed)

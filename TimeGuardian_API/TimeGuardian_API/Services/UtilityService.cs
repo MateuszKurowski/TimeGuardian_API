@@ -25,6 +25,9 @@ public class UtilityService : IUtilityService
 
     public ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
     {
+        if (string.IsNullOrEmpty(token))
+            throw new LoginException("Invalid token");
+
         var tokenValidationParameters = new TokenValidationParameters
         {
             ValidateAudience = false,
@@ -44,6 +47,9 @@ public class UtilityService : IUtilityService
 
     public int GetUserIdFromToken(string token)
     {
+        if (string.IsNullOrEmpty(token))
+            throw new LoginException("Invalid token");
+
         var identity = GetPrincipalFromExpiredToken(token);
         if (identity != null)
         {

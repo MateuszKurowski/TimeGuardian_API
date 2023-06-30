@@ -30,7 +30,7 @@ public class SessionTypeController : ControllerBase
         return Ok(sessionType);
     }
 
-    [Authorize(Roles = "Admmin")]
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     [Route("name")]
     public ActionResult<SessionTypeDto> GetByNameAndUserId([FromBody] GetSessionTypeByNameAndUserIdDto dto)
@@ -39,7 +39,7 @@ public class SessionTypeController : ControllerBase
         return Ok(sessionType);
     }
 
-    [Authorize(Roles = "Admmin")]
+    [Authorize(Roles = "Admin")]
     [Route("user/{userId}")]
     [HttpGet]
     public ActionResult<IEnumerable<SessionTypeDto>> GetByUserId([FromRoute] int userId)

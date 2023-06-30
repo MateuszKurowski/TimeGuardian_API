@@ -92,7 +92,7 @@ public class SessionTypeService : ISessionTypeService
 
     public IEnumerable<SessionTypeDto> GetByUserId(int userId)
     {
-        var sessionTypes = _dbContext.SessionTypes?.Where(sessionType => sessionType.CreatedById == userId || sessionType.Defaul)?.Include(x => x.CreatedBy)?.Select(sessionType => _mapper.Map<SessionTypeDto>(sessionType));
+        var sessionTypes = _dbContext.SessionTypes?.Where(sessionType => sessionType.CreatedById == userId || sessionType.Default)?.Include(x => x.CreatedBy)?.Select(sessionType => _mapper.Map<SessionTypeDto>(sessionType));
 
         return sessionTypes is null
             ? Enumerable.Empty<SessionTypeDto>()

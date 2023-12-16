@@ -271,7 +271,7 @@ public class SessionService : ISessionService
         if (dto.StartTime is null)
         {
             TimeZoneInfo myTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
-            var newDate = DateTime.Now;
+            var newDate = DateTime.UtcNow;
             var dateTimeOffset = new DateTimeOffset(newDate);
             DateTimeOffset dateTimeLocal = TimeZoneInfo.ConvertTime(dateTimeOffset, myTimeZone);
             dto.StartTime = dateTimeLocal.DateTime;

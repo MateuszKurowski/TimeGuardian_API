@@ -3,6 +3,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 
+using System;
 using System.Security.Claims;
 
 using TimeGuardian_API.Authorization;
@@ -214,7 +215,14 @@ public class SessionService : ISessionService
 
     public SessionDto StartSession(StartSessionDto dto)
     {
-        dto.StartTime ??= DateTime.Now;
+        if (dto.StartTime is null)
+        {
+            TimeZoneInfo myTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
+            var newDate = DateTime.Now;
+            var dateTimeOffset = new DateTimeOffset(newDate);
+            DateTimeOffset dateTimeLocal = TimeZoneInfo.ConvertTime(dateTimeOffset, myTimeZone);
+            dto.StartTime = dateTimeLocal.DateTime;
+        }
 
         var session = new Session()
         {
@@ -259,7 +267,15 @@ public class SessionService : ISessionService
         var userId = user.FindFirst(x => x.Type == ClaimTypes.NameIdentifier)?.Value
             ?? throw new Exception("userId is null");
 
-        dto.StartTime ??= DateTime.Now;
+
+        if (dto.StartTime is null)
+        {
+            TimeZoneInfo myTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
+            var newDate = DateTime.Now;
+            var dateTimeOffset = new DateTimeOffset(newDate);
+            DateTimeOffset dateTimeLocal = TimeZoneInfo.ConvertTime(dateTimeOffset, myTimeZone);
+            dto.StartTime = dateTimeLocal.DateTime;
+        }
 
         var session = new Session()
         {
@@ -277,7 +293,14 @@ public class SessionService : ISessionService
 
     public SessionDto EndSessionByAccount(EndSessionDtoByAccount dto, ClaimsPrincipal user)
     {
-        dto.EndTime ??= DateTime.Now;
+        if (dto.EndTime is null)
+        {
+            TimeZoneInfo myTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
+            var newDate = DateTime.Now;
+            var dateTimeOffset = new DateTimeOffset(newDate);
+            DateTimeOffset dateTimeLocal = TimeZoneInfo.ConvertTime(dateTimeOffset, myTimeZone);
+            dto.EndTime = dateTimeLocal.DateTime;
+        }
 
         var session = _dbContext.Sessions.Include(x => x.SessionType).Include(x => x.User).FirstOrDefault(x => x.Id == dto.SessionId && !x.Deleted)
             ?? throw new NotFoundException(NotFoundException.Entities.Session);

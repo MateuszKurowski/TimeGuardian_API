@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
 
+using TimeGuardian_API.Exceptions;
 using TimeGuardian_API.Models;
 using TimeGuardian_API.Models.Login;
 using TimeGuardian_API.Services;
@@ -43,5 +44,18 @@ public class LoginController : ControllerBase
 
         var newTokens = _loginService.RefreshJwt(dto);
         return Ok(newTokens);
+    }
+
+    [HttpPost]
+    [Authorize]
+    [Route("logout")]
+    public ActionResult Logout()
+    {
+        var token = Request?.Headers[HeaderNames.Authorization].ToString()?.Replace("Bearer ", "");
+        if (string.IsNullOrWhiteSpace(token))
+            throw new ForbidException();
+
+        _loginService.ExpireToken(token);
+        return Ok("Wylogowano");
     }
 }

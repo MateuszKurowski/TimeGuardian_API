@@ -56,6 +56,9 @@ public class UserService : IUserService
 
     public UserDto Create(CreateUserDto dto)
     {
+        if (dto.RoleId < 1)
+            dto.RoleId = 2;
+
         var user = _mapper.Map<User>(dto);
 
         var emailIsInUse = _dbContext.Users.Any(x => x.Email == dto.Email && !x.Deleted);

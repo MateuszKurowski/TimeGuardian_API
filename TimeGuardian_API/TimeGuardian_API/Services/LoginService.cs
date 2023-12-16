@@ -2,12 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
-using System.CodeDom.Compiler;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.RegularExpressions;
 
 using TimeGuardian_API.Data;
 using TimeGuardian_API.Entities;
@@ -21,6 +19,7 @@ public interface ILoginService
 {
     RefreshTokenDto GenerateJwt(LoginDto dto);
     RefreshTokenDto RefreshJwt(RefreshTokenDto dto);
+    void ExpireToken(string token);
 }
 
 public class LoginService : ILoginService
@@ -87,6 +86,26 @@ public class LoginService : ILoginService
         return refreshToken;
     }
 
+
+    public void ExpireToken(string token)
+    {
+        var userId = _utilityService.GetUserIdFromToken(token);
+
+        var user = _dbContext.Users.Include(x => x.Role).FirstOrDefault(x => x.Id == userId && !x.Deleted);
+        if (user is null)
+            throw new BadRequestException();
+
+        var randomNumber = new byte[32];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomNumber);
+        var refreshToken = Convert.ToBase64String(randomNumber);
+
+        user.RefreshToken = refreshToken;
+        user.RefreshTokenExpiryTime = null;
+        _dbContext.SaveChanges();
+
+
+    }
     
 
     private string GenerateNewTokenJwt(User user)

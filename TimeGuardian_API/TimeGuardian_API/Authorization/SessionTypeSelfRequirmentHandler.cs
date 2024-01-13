@@ -10,7 +10,7 @@ namespace TimeGuardian_API.Authorization;
 
 public class SessionTypeSelfRequirmentHandler : AuthorizationHandler<SessionTypeSelfRequirment, SessionType>
 {
-    protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, SessionTypeSelfRequirment requirement, SessionType resource)
+    protected override System.Threading.Tasks.Task HandleRequirementAsync(AuthorizationHandlerContext context, SessionTypeSelfRequirment requirement, SessionType resource)
     {
         var userId = context.User.FindFirst(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
         var roleName = context.User.FindFirst(x => x.Type == ClaimTypes.Role)?.Value;
@@ -19,6 +19,6 @@ public class SessionTypeSelfRequirmentHandler : AuthorizationHandler<SessionType
                 || roleName == requirement.AdminRoleName)
             context.Succeed(requirement);
 
-        return Task.CompletedTask;
+        return System.Threading.Tasks.Task.CompletedTask;
     }
 }

@@ -8,6 +8,8 @@ public class NotFoundException : Exception
         User,
         Session,
         SessionType,
+        Task,
+        Pomodoro,
     }
 
     public NotFoundException(Entities entities) : base()
@@ -22,6 +24,10 @@ public class NotFoundException : Exception
                 throw new NotFoundException("Session not found.");
             case Entities.SessionType:
                 throw new NotFoundException("Session type not found.");
+            case Entities.Task:
+                throw new NotFoundException("Task not found.");
+            case Entities.Pomodoro:
+                throw new NotFoundException("Pomodoro session not found.");
         }
     }
 

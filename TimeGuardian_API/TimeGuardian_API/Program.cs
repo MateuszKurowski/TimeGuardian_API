@@ -3,14 +3,12 @@ using FluentValidation.AspNetCore;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 using NLog;
 using NLog.Web;
-using NLog.Web.LayoutRenderers;
 
 using System.Reflection;
 using System.Text;
@@ -73,6 +71,8 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddScoped<IAuthorizationHandler, SelfRequirementHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, SessionSelfRequirmentHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, SessionTypeSelfRequirmentHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, PomodoroSelfRequirmentHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, TaskSelfRequirmentHandler>();
 builder.Services.AddControllers();
 builder.Services.AddFluentValidationAutoValidation().AddFluentValidationClientsideAdapters();
 
@@ -90,6 +90,9 @@ builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<ISessionTypeService, SessionTypeService>();
 builder.Services.AddScoped<ISessionService, SessionService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITaskService, TaskService>();
+builder.Services.AddScoped<IPomodoroService, PomodoroService>();
+builder.Services.AddScoped<ITaskListService, TaskListService>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
 builder.Services.AddScoped<IValidator<CreateUserDto>, CreateUserDtoValidator>();

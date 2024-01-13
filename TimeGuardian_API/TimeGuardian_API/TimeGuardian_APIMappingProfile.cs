@@ -2,10 +2,14 @@
 
 using TimeGuardian_API.Entities;
 using TimeGuardian_API.Models;
+using TimeGuardian_API.Models.Pomodoro;
 using TimeGuardian_API.Models.Role;
 using TimeGuardian_API.Models.Session;
 using TimeGuardian_API.Models.SessionType;
+using TimeGuardian_API.Models.Task;
 using TimeGuardian_API.Models.User;
+
+using Task = TimeGuardian_API.Entities.Task;
 
 namespace TimeGuardian_API;
 
@@ -57,6 +61,32 @@ public class TimeGuardian_APIMappingProfile : Profile
 
         CreateMap<Session, PatchSessionDtoByAccount>();
         CreateMap<PatchSessionDtoByAccount, Session>();
+        #endregion
+
+        #region Pomodoro
+        CreateMap<PomodoroDto, Pomodoro>();
+        CreateMap<Pomodoro, PomodoroDto>();
+
+        CreateMap<Pomodoro, CreatePomodoroDto>()
+            .ForMember(m => m.DurationInMinutes, x => x.MapFrom(r => r.Duration));
+        CreateMap<CreatePomodoroDto, Pomodoro>()
+            .ForMember(m => m.Duration, x => x.MapFrom(r => r.DurationInMinutes));
+
+        CreateMap<Pomodoro, CreateByAdminPomodoroDto>()
+            .ForMember(m => m.DurationInMinutes, x => x.MapFrom(r => r.Duration));
+        CreateMap<CreateByAdminPomodoroDto, Pomodoro>()
+            .ForMember(m => m.Duration, x => x.MapFrom(r => r.DurationInMinutes));
+        #endregion
+
+        #region Task
+        CreateMap<TaskDto, Task>();
+        CreateMap<Task, TaskDto>();
+
+        CreateMap<Task, CreateTaskDto>();
+        CreateMap<CreateTaskDto, Task>();
+
+        CreateMap<Task, CreateByAdminTaskDto>();
+        CreateMap<CreateByAdminTaskDto, Task>();
         #endregion
     }
 }

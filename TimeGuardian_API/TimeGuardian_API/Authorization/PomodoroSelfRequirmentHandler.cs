@@ -1,6 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 using System.Security.Claims;
 
@@ -8,9 +6,9 @@ using TimeGuardian_API.Entities;
 
 namespace TimeGuardian_API.Authorization;
 
-public class SessionSelfRequirmentHandler : AuthorizationHandler<SessionSelfRequirment, Session>
+public class PomodoroSelfRequirmentHandler : AuthorizationHandler<PomodoroSelfRequirment, Pomodoro>
 {
-    protected override System.Threading.Tasks.Task HandleRequirementAsync(AuthorizationHandlerContext context, SessionSelfRequirment requirement, Session resource)
+    protected override System.Threading.Tasks.Task HandleRequirementAsync(AuthorizationHandlerContext context, PomodoroSelfRequirment requirement, Pomodoro resource)
     {
         var userId = context.User.FindFirst(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
         var roleName = context.User.FindFirst(x => x.Type == ClaimTypes.Role)?.Value;

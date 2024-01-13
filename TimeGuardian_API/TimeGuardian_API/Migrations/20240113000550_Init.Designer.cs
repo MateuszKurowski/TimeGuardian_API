@@ -11,7 +11,7 @@ using TimeGuardian_API.Data;
 namespace TimeGuardian_API.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    [Migration("20230627200632_Init")]
+    [Migration("20240113000550_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -21,6 +21,28 @@ namespace TimeGuardian_API.Migrations
             modelBuilder
                 .HasAnnotation("ProductVersion", "7.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
+
+            modelBuilder.Entity("TimeGuardian_API.Entities.Pomodoro", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("Duration")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Pomodoro");
+                });
 
             modelBuilder.Entity("TimeGuardian_API.Entities.Role", b =>
                 {
@@ -95,6 +117,71 @@ namespace TimeGuardian_API.Migrations
                     b.ToTable("SessionTypes");
                 });
 
+            modelBuilder.Entity("TimeGuardian_API.Entities.Task", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("DueDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int>("TaskListId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TaskListId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Tasks");
+                });
+
+            modelBuilder.Entity("TimeGuardian_API.Entities.TaskList", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("TaskLists");
+                });
+
             modelBuilder.Entity("TimeGuardian_API.Entities.User", b =>
                 {
                     b.Property<int>("Id")
@@ -147,6 +234,17 @@ namespace TimeGuardian_API.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("TimeGuardian_API.Entities.Pomodoro", b =>
+                {
+                    b.HasOne("TimeGuardian_API.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("TimeGuardian_API.Entities.Session", b =>
                 {
                     b.HasOne("TimeGuardian_API.Entities.SessionType", "SessionType")
@@ -173,6 +271,36 @@ namespace TimeGuardian_API.Migrations
                         .HasForeignKey("CreatedById");
 
                     b.Navigation("CreatedBy");
+                });
+
+            modelBuilder.Entity("TimeGuardian_API.Entities.Task", b =>
+                {
+                    b.HasOne("TimeGuardian_API.Entities.TaskList", "TaskList")
+                        .WithMany()
+                        .HasForeignKey("TaskListId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TimeGuardian_API.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TaskList");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TimeGuardian_API.Entities.TaskList", b =>
+                {
+                    b.HasOne("TimeGuardian_API.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("TimeGuardian_API.Entities.User", b =>

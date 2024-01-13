@@ -2,6 +2,8 @@
 
 using TimeGuardian_API.Entities;
 
+using Task = TimeGuardian_API.Entities.Task;
+
 namespace TimeGuardian_API.Data;
 
 public class ApiDbContext : DbContext
@@ -10,6 +12,9 @@ public class ApiDbContext : DbContext
     public DbSet<SessionType> SessionTypes { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Role> Roles { get; set; }
+    public DbSet<Task> Tasks { get; set; }
+    public DbSet<TaskList> TaskLists { get; set; }
+    public DbSet<Pomodoro> Pomodoro { get; set; }
 
     public ApiDbContext(DbContextOptions<ApiDbContext> options) : base(options)
     {
@@ -53,6 +58,24 @@ public class ApiDbContext : DbContext
         modelBuilder.Entity<Session>()
                     .Property(e => e.SessionTypeId)
                     .IsRequired();
+
+
+        modelBuilder.Entity<Task>()
+                    .Property(e => e.Title)
+                    .IsRequired();
+        modelBuilder.Entity<Task>()
+                    .Property(e => e.UserId)
+                    .IsRequired();
+
+        modelBuilder.Entity <Pomodoro>()
+                   .Property(e => e.UserId)
+                   .IsRequired();
+        modelBuilder.Entity<Pomodoro>()
+                   .Property(e => e.Duration)
+                   .IsRequired();
+        modelBuilder.Entity<Pomodoro>()
+                   .Property(e => e.Date)
+                   .IsRequired();
     }
 
     public static void ApplyDbContext(WebApplicationBuilder builder)

@@ -8,7 +8,6 @@ using TimeGuardian_API.Services;
 
 namespace TimeGuardian_API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/account")]
 public class AccountControler : ControllerBase
@@ -68,6 +67,7 @@ public class AccountControler : ControllerBase
         return NoContent();
     }
 
+    [AllowAnonymous]
     [HttpPost]
     [Route("forgot")]
     public ActionResult Forgot([FromBody] ForgotPassword forgotPassword)

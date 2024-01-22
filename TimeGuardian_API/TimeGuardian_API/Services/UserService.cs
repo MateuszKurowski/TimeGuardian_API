@@ -13,6 +13,7 @@ namespace TimeGuardian_API.Services;
 
 public interface IUserService
 {
+    void ForgotPassword(ForgotPassword forgotPassword);
     void ChangePassword(PasswordDto dto, int id);
     void ChangeRole(int userId, int roleId);
     UserDto Create(CreateUserDto dto);
@@ -165,6 +166,16 @@ public class UserService : IUserService
         if (passwordVerificationResult == PasswordVerificationResult.Failed)
             throw new LoginException();
 
+        user.PasswordHash = newPasswordHash;
+        _dbContext.SaveChanges();
+    }
+
+    public void ForgotPassword(ForgotPassword forgotPassword)
+    {
+        var user = _dbContext.Users.FirstOrDefault(u => u.Email == forgotPassword.Email)
+            ?? throw new NotFoundException(NotFoundException.Entities.User);
+
+        var newPasswordHash = _passwordHasher.HashPassword(user, forgotPassword.NewPassword);
         user.PasswordHash = newPasswordHash;
         _dbContext.SaveChanges();
     }

@@ -67,4 +67,12 @@ public class AccountControler : ControllerBase
         _userService.ChangePassword(dto, id);
         return NoContent();
     }
+
+    [HttpPost]
+    [Route("forgot")]
+    public ActionResult Forgot([FromBody] ForgotPassword forgotPassword)
+    {
+        _userService.ForgotPassword(forgotPassword);
+        return NoContent();
+    }
 }

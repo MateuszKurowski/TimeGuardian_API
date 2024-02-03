@@ -9,6 +9,7 @@ public class CreateTaskDto
     public string? Description { get; set; }
 
     public DateTime? DueDate { get; set; } = null;
+    public DateTime? CreateDate { get; set; } = null;
 
     public bool? IsCompleted { get; set; } = false;
 }

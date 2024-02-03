@@ -12,7 +12,7 @@ public class TaskDto
 
     public DateTime? DueDate { get; set; } = null;
 
-    public DateTime CreateDate { get; set; } = DateTime.Now;
+    public DateTime? CreateDate { get; set; }
 
     public bool IsCompleted { get; set; } = false;
 

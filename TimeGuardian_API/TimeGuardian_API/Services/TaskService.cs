@@ -97,10 +97,11 @@ public class TaskService : ITaskService
         if (!authorizationResult.Succeeded)
             throw new ForbidException();
 
-        if (dto.DueDate is null || dto.Description is null || dto.Title is null || dto.IsCompleted is null)
+        if (dto.DueDate is null || dto.Description is null || dto.Title is null || dto.IsCompleted is null || dto.CreateDate is null)
             throw new BadRequestException();
 
         task.DueDate = (DateTime)dto.DueDate;
+        task.CreateDate = (DateTime)dto.CreateDate;
         task.Title = dto.Title;
         task.Description = dto.Description;
         task.IsCompleted = (bool)dto.IsCompleted;
@@ -125,6 +126,11 @@ public class TaskService : ITaskService
         if (dto.DueDate != null)
         {
             task.DueDate = (DateTime)dto.DueDate;
+            wasChanges = true;
+        }
+        if (dto.CreateDate != null)
+        {
+            task.CreateDate = (DateTime)dto.CreateDate;
             wasChanges = true;
         }
         if (string.IsNullOrWhiteSpace(dto.Title) is false)
@@ -161,7 +167,6 @@ public class TaskService : ITaskService
         var userDAO = _dbContext.Users.FirstOrDefault(x => x.Id == task.UserId)
             ?? throw new NotFoundException(NotFoundException.Entities.Task);
         task.User = userDAO;
-        task.CreateDate = DateTime.Now;
 
         _dbContext.Tasks.Add(task);
         _dbContext.SaveChanges();
@@ -181,7 +186,6 @@ public class TaskService : ITaskService
         var userDAO = _dbContext.Users.FirstOrDefault(x => x.Id == task.UserId)
             ?? throw new NotFoundException(NotFoundException.Entities.Task);
         task.User = userDAO;
-        task.CreateDate = DateTime.Now;
 
         _dbContext.SaveChanges();
 
